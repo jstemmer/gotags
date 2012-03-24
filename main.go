@@ -5,6 +5,7 @@ import (
 	"go/parser"
 	"go/token"
 	"os"
+	"strings"
 )
 
 const VERSION = "0.0.1"
@@ -33,6 +34,15 @@ func main() {
 		line := fset.Position(f.Name.Pos()).Line
 		name := fset.File(f.Name.Pos()).Name()
 		fmt.Printf("%s\t%s\t%d;\"\tp\n", f.Name.Name, name, line)
+	}
+
+	// imports
+	for _, im := range f.Imports {
+		if im.Path != nil {
+			line := fset.Position(im.Path.Pos()).Line
+			name := fset.File(im.Path.Pos()).Name()
+			fmt.Printf("%s\t%s\t%d;\"\ti\n", strings.Trim(im.Path.Value, "\""), name, line)
+		}
 	}
 }
 
