@@ -1,16 +1,14 @@
-go-tags
-===============
+gotags
+======
 
 Go tags generator
 
 Installation
 ------------
-
 	go get github.com/jstemmer/go-tags
-
 	go install github.com/jstemmer/go-tags
 
-Vim Tagbar configuration
+Vim [Tagbar](http://majutsushi.github.com/tagbar/) configuration
 ------------------------
 	let g:tagbar_type_go = {
 		\ 'ctagstype' : 'go',
