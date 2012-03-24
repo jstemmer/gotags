@@ -31,7 +31,8 @@ func main() {
 	// package
 	if f.Name != nil {
 		line := fset.Position(f.Name.Pos()).Line
-		fmt.Printf("%s\t%s\t%d;\" p\n", f.Name.Name, filename, line)
+		name := fset.File(f.Name.Pos()).Name()
+		fmt.Printf("%s\t%s\t%d;\"\tp\n", f.Name.Name, name, line)
 	}
 }
 
