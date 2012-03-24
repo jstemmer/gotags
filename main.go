@@ -64,5 +64,5 @@ func printUsage() {
 func printTag(tag, kind string, pos token.Pos) {
 	line := fset.Position(pos).Line
 	file := fset.File(pos).Name()
-	fmt.Printf("%s\t%s\t%d;\"\t%s\n", tag, file, line, kind)
+	fmt.Printf("%s\t%s\t%d;\"\t%s\tline:%d\n", tag, file, line, kind, line)
 }
