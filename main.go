@@ -7,9 +7,12 @@ import (
 	"os"
 )
 
+const VERSION = "0.0.1"
+
 func main() {
 	if len(os.Args) != 2 {
-		usage()
+		printUsage()
+		os.Exit(1)
 	}
 
 	filename := os.Args[1]
@@ -32,7 +35,7 @@ func main() {
 	}
 }
 
-func usage() {
-	// TODO: print usage
-	os.Exit(1)
+func printUsage() {
+	fmt.Printf("gotags version %s\n\n", VERSION)
+	fmt.Printf("Usage: %s file\n", os.Args[0])
 }
