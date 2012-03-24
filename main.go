@@ -25,8 +25,8 @@ func main() {
 	}
 
 	// header
-	fmt.Println("!_TAG_FILE_FORMAT\t2\t//")
-	fmt.Println("!_TAG_FILE_SORTED\t0\t//")
+	fmt.Println("!_TAG_FILE_FORMAT\t2\t")
+	fmt.Println("!_TAG_FILE_SORTED\t0\t")
 
 	// package
 	if f.Name != nil {
