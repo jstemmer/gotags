@@ -14,7 +14,9 @@ Vim [Tagbar](http://majutsushi.github.com/tagbar/) configuration
 		\ 'ctagstype' : 'go',
 		\ 'kinds'     : [
 			\ 'p:package',
-			\ 'i:imports'
+			\ 'i:imports:1',
+			\ 's:structs',
+			\ 'f:functions'
 		\ ],
 		\ 'ctagsbin'  : 'gotags',
 		\ 'ctagsargs' : ''
