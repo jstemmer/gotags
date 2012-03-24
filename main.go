@@ -10,6 +10,8 @@ import (
 
 const VERSION = "0.0.1"
 
+var fset *token.FileSet
+
 func main() {
 	if len(os.Args) != 2 {
 		printUsage()
@@ -18,7 +20,8 @@ func main() {
 
 	filename := os.Args[1]
 
-	fset := token.NewFileSet()
+	fset = token.NewFileSet()
+
 	f, err := parser.ParseFile(fset, filename, nil, 0)
 	if err != nil {
 		fmt.Println(err)
@@ -31,17 +34,13 @@ func main() {
 
 	// package
 	if f.Name != nil {
-		line := fset.Position(f.Name.Pos()).Line
-		name := fset.File(f.Name.Pos()).Name()
-		fmt.Printf("%s\t%s\t%d;\"\tp\n", f.Name.Name, name, line)
+		printTag(f.Name.Name, "p", f.Name.Pos())
 	}
 
 	// imports
 	for _, im := range f.Imports {
 		if im.Path != nil {
-			line := fset.Position(im.Path.Pos()).Line
-			name := fset.File(im.Path.Pos()).Name()
-			fmt.Printf("%s\t%s\t%d;\"\ti\n", strings.Trim(im.Path.Value, "\""), name, line)
+			printTag(strings.Trim(im.Path.Value, "\""), "i", im.Path.Pos())
 		}
 	}
 }
@@ -49,4 +48,10 @@ func main() {
 func printUsage() {
 	fmt.Printf("gotags version %s\n\n", VERSION)
 	fmt.Printf("Usage: %s file\n", os.Args[0])
+}
+
+func printTag(tag, kind string, pos token.Pos) {
+	line := fset.Position(pos).Line
+	file := fset.File(pos).Name()
+	fmt.Printf("%s\t%s\t%d;\"\t%s\n", tag, file, line, kind)
 }
