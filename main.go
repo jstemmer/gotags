@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"go/ast"
 	"go/parser"
 	"go/token"
 	"os"
@@ -41,6 +42,16 @@ func main() {
 	for _, im := range f.Imports {
 		if im.Path != nil {
 			printTag(strings.Trim(im.Path.Value, "\""), "i", im.Path.Pos())
+		}
+	}
+
+	// declarations
+	for _, d := range f.Decls {
+		if fd, ok := d.(*ast.FuncDecl); ok {
+			if fd.Name != nil {
+				// TODO: add params, receiver, etc
+				printTag(fd.Name.Name, "f", fd.Pos())
+			}
 		}
 	}
 }
