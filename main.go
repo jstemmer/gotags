@@ -47,10 +47,19 @@ func main() {
 
 	// declarations
 	for _, d := range f.Decls {
-		if fd, ok := d.(*ast.FuncDecl); ok {
-			if fd.Name != nil {
+		switch decl := d.(type) {
+		case *ast.FuncDecl:
+			if decl.Name != nil {
 				// TODO: add params, receiver, etc
-				printTag(fd.Name.Name, "f", fd.Pos())
+				printTag(decl.Name.Name, "f", decl.Pos())
+			}
+		case *ast.GenDecl:
+			for _, s := range decl.Specs {
+				if ts, ok := s.(*ast.TypeSpec); ok {
+					if ts.Name != nil {
+						printTag(ts.Name.Name, "s", ts.Pos())
+					}
+				}
 			}
 		}
 	}
