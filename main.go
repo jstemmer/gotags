@@ -6,6 +6,7 @@ import (
 	"go/parser"
 	"go/token"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -22,6 +23,7 @@ func main() {
 	filename := os.Args[1]
 
 	fset = token.NewFileSet()
+	tags := make(sort.StringSlice, 0)
 
 	f, err := parser.ParseFile(fset, filename, nil, 0)
 	if err != nil {
@@ -30,18 +32,19 @@ func main() {
 	}
 
 	// header
-	fmt.Println("!_TAG_FILE_FORMAT\t2\t")
-	fmt.Println("!_TAG_FILE_SORTED\t0\t")
+	tags = append(tags, "!_TAG_FILE_FORMAT\t2\t")
+	tags = append(tags, "!_TAG_FILE_SORTED\t1\t")
 
 	// package
 	if f.Name != nil {
-		printTag(f.Name.Name, "p", f.Name.Pos())
+		tags = append(tags, createTag(f.Name.Name, f.Name.Pos(), "p"))
 	}
 
 	// imports
 	for _, im := range f.Imports {
 		if im.Path != nil {
-			printTag(strings.Trim(im.Path.Value, "\""), "i", im.Path.Pos())
+			name := strings.Trim(im.Path.Value, "\"")
+			tags = append(tags, createTag(name, im.Path.Pos(), "i"))
 		}
 	}
 
@@ -51,17 +54,23 @@ func main() {
 		case *ast.FuncDecl:
 			if decl.Name != nil {
 				// TODO: add params, receiver, etc
-				printTag(decl.Name.Name, "f", decl.Pos())
+				tags = append(tags, createTag(decl.Name.Name, decl.Pos(), "f"))
 			}
 		case *ast.GenDecl:
 			for _, s := range decl.Specs {
 				if ts, ok := s.(*ast.TypeSpec); ok {
 					if ts.Name != nil {
-						printTag(ts.Name.Name, "s", ts.Pos())
+						tags = append(tags, createTag(ts.Name.Name, ts.Pos(), "s"))
 					}
 				}
 			}
 		}
+	}
+
+	// sort and print tags
+	sort.Sort(tags)
+	for _, tag := range tags {
+		fmt.Println(tag)
 	}
 }
 
@@ -70,8 +79,6 @@ func printUsage() {
 	fmt.Printf("Usage: %s file\n", os.Args[0])
 }
 
-func printTag(tag, kind string, pos token.Pos) {
-	line := fset.Position(pos).Line
-	file := fset.File(pos).Name()
-	fmt.Printf("%s\t%s\t%d;\"\t%s\tline:%d\n", tag, file, line, kind, line)
+func createTag(name string, pos token.Pos, tagtype string) string {
+	return NewTag(name, fset.File(pos).Name(), fset.Position(pos).Line, tagtype).String()
 }
