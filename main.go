@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -37,14 +38,14 @@ func main() {
 
 	// package
 	if f.Name != nil {
-		tags = append(tags, createTag(f.Name.Name, f.Name.Pos(), "p"))
+		tags = append(tags, createTag(f.Name.Name, f.Name.Pos(), "p").String())
 	}
 
 	// imports
 	for _, im := range f.Imports {
 		if im.Path != nil {
 			name := strings.Trim(im.Path.Value, "\"")
-			tags = append(tags, createTag(name, im.Path.Pos(), "i"))
+			tags = append(tags, createTag(name, im.Path.Pos(), "i").String())
 		}
 	}
 
@@ -52,15 +53,12 @@ func main() {
 	for _, d := range f.Decls {
 		switch decl := d.(type) {
 		case *ast.FuncDecl:
-			if decl.Name != nil {
-				// TODO: add params, receiver, etc
-				tags = append(tags, createTag(decl.Name.Name, decl.Pos(), "f"))
-			}
+			tags = append(tags, createFuncTag(decl))
 		case *ast.GenDecl:
 			for _, s := range decl.Specs {
 				if ts, ok := s.(*ast.TypeSpec); ok {
 					if ts.Name != nil {
-						tags = append(tags, createTag(ts.Name.Name, ts.Pos(), "s"))
+						tags = append(tags, createTag(ts.Name.Name, ts.Pos(), "s").String())
 					}
 				}
 			}
@@ -79,6 +77,50 @@ func printUsage() {
 	fmt.Printf("Usage: %s file\n", os.Args[0])
 }
 
-func createTag(name string, pos token.Pos, tagtype string) string {
-	return NewTag(name, fset.File(pos).Name(), fset.Position(pos).Line, tagtype).String()
+func createTag(name string, pos token.Pos, tagtype string) *Tag {
+	return NewTag(name, fset.File(pos).Name(), fset.Position(pos).Line, tagtype)
+}
+
+func createFuncTag(f *ast.FuncDecl) string {
+	if f == nil || f.Name == nil {
+		return ""
+	}
+
+	tag := createTag(f.Name.Name, f.Pos(), "f")
+
+	// access
+	if ast.IsExported(tag.Name) {
+		tag.Fields["access"] = "public"
+	} else {
+		tag.Fields["access"] = "private"
+	}
+
+	// signature
+	var sig bytes.Buffer
+	sig.WriteByte('(')
+	for i, param := range f.Type.Params.List {
+		// parameter names
+		for j, n := range param.Names {
+			sig.WriteString(n.Name)
+			if j < len(param.Names)-1 {
+				sig.WriteString(", ")
+			}
+		}
+
+		// parameter type
+		if t, ok := param.Type.(*ast.Ident); ok {
+			sig.WriteByte(' ')
+			sig.WriteString(t.Name)
+		}
+
+		if i < len(f.Type.Params.List)-1 {
+			sig.WriteString(", ")
+		}
+	}
+	sig.WriteByte(')')
+	tag.Fields["signature"] = sig.String()
+
+	// TODO: receiver
+
+	return tag.String()
 }
