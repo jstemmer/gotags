@@ -28,7 +28,8 @@ func main() {
 
 	f, err := parser.ParseFile(fset, filename, nil, 0)
 	if err != nil {
-		fmt.Println(err)
+		// TODO: fix error handling; it should still result in a valid ctags file
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
@@ -57,9 +58,7 @@ func main() {
 		case *ast.GenDecl:
 			for _, s := range decl.Specs {
 				if ts, ok := s.(*ast.TypeSpec); ok {
-					if ts.Name != nil {
-						tags = append(tags, createTag(ts.Name.Name, ts.Pos(), "s").String())
-					}
+					tags = append(tags, createTag(ts.Name.Name, ts.Pos(), "s").String())
 				}
 			}
 		}
