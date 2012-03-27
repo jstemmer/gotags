@@ -57,8 +57,22 @@ func main() {
 			tags = append(tags, createFuncTag(decl))
 		case *ast.GenDecl:
 			for _, s := range decl.Specs {
-				if ts, ok := s.(*ast.TypeSpec); ok {
+				switch ts := s.(type) {
+				case *ast.TypeSpec:
 					tags = append(tags, createTag(ts.Name.Name, ts.Pos(), "t").String())
+				case *ast.ValueSpec:
+					if len(ts.Names) > 0 {
+						tag := createTag(ts.Names[0].Name, ts.Pos(), "v")
+
+						switch ts.Names[0].Obj.Kind {
+						case ast.Var:
+							tag.Type = "v"
+						case ast.Con:
+							tag.Type = "c"
+						}
+
+						tags = append(tags, tag.String())
+					}
 				}
 			}
 		}
