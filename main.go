@@ -122,7 +122,7 @@ func createFuncTag(f *ast.FuncDecl) string {
 
 		// parameter type
 		sig.WriteByte(' ')
-		sig.WriteString(getType(param.Type))
+		sig.WriteString(getType(param.Type, true))
 
 		if i < len(f.Type.Params.List)-1 {
 			sig.WriteString(", ")
@@ -133,20 +133,24 @@ func createFuncTag(f *ast.FuncDecl) string {
 
 	// receiver
 	if f.Recv != nil && len(f.Recv.List) > 0 {
-		tag.Fields["type"] = getType(f.Recv.List[0].Type)
+		tag.Fields["type"] = getType(f.Recv.List[0].Type, false)
 	}
 
 	return tag.String()
 }
 
-func getType(node ast.Node) (paramType string) {
+func getType(node ast.Node, star bool) (paramType string) {
 	switch t := node.(type) {
 	case *ast.Ident:
 		paramType = t.Name
 	case *ast.StarExpr:
-		paramType = "*" + getType(t.X)
+		if star {
+			paramType = "*" + getType(t.X, star)
+		} else {
+			paramType = getType(t.X, star)
+		}
 	case *ast.SelectorExpr:
-		paramType = getType(t.X) + "." + getType(t.Sel)
+		paramType = getType(t.X, star) + "." + getType(t.Sel, star)
 	}
 	return
 }
