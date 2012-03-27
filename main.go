@@ -58,7 +58,7 @@ func main() {
 		case *ast.GenDecl:
 			for _, s := range decl.Specs {
 				if ts, ok := s.(*ast.TypeSpec); ok {
-					tags = append(tags, createTag(ts.Name.Name, ts.Pos(), "s").String())
+					tags = append(tags, createTag(ts.Name.Name, ts.Pos(), "t").String())
 				}
 			}
 		}
@@ -108,7 +108,7 @@ func createFuncTag(f *ast.FuncDecl) string {
 
 		// parameter type
 		sig.WriteByte(' ')
-		sig.WriteString(getParamType(param.Type))
+		sig.WriteString(getType(param.Type))
 
 		if i < len(f.Type.Params.List)-1 {
 			sig.WriteString(", ")
@@ -117,19 +117,22 @@ func createFuncTag(f *ast.FuncDecl) string {
 	sig.WriteByte(')')
 	tag.Fields["signature"] = sig.String()
 
-	// TODO: receiver
+	// receiver
+	if f.Recv != nil && len(f.Recv.List) > 0 {
+		tag.Fields["recv"] = getType(f.Recv.List[0].Type)
+	}
 
 	return tag.String()
 }
 
-func getParamType(node ast.Node) (paramType string) {
+func getType(node ast.Node) (paramType string) {
 	switch t := node.(type) {
 	case *ast.Ident:
 		paramType = t.Name
 	case *ast.StarExpr:
-		paramType = "*" + getParamType(t.X)
+		paramType = "*" + getType(t.X)
 	case *ast.SelectorExpr:
-		paramType = getParamType(t.X) + "." + getParamType(t.Sel)
+		paramType = getType(t.X) + "." + getType(t.Sel)
 	}
 	return
 }
