@@ -1,7 +1,7 @@
 gotags
 ======
 
-Go tags generator
+Exuberant-ctags compatible tag generator for Go.
 
 Installation
 ------------
@@ -9,7 +9,7 @@ Installation
 	go install github.com/jstemmer/go-tags
 
 Vim [Tagbar](http://majutsushi.github.com/tagbar/) configuration
-------------------------
+----------------------------------------------------------------
 	let g:tagbar_type_go = {
 		\ 'ctagstype' : 'go',
 		\ 'kinds'     : [
