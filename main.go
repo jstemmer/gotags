@@ -119,7 +119,7 @@ func createFuncTag(f *ast.FuncDecl) string {
 
 	// receiver
 	if f.Recv != nil && len(f.Recv.List) > 0 {
-		tag.Fields["recv"] = getType(f.Recv.List[0].Type)
+		tag.Fields["type"] = getType(f.Recv.List[0].Type)
 	}
 
 	return tag.String()

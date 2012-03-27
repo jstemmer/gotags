@@ -18,6 +18,13 @@ Vim [Tagbar](http://majutsushi.github.com/tagbar/) configuration
 			\ 't:types',
 			\ 'f:functions'
 		\ ],
+		\ 'sro' : '.',
+		\ 'kind2scope' : {
+			\ 't' : 'type'
+		\ },
+		\ 'scope2kind' : {
+			\ 'type' : 't'
+		\ },
 		\ 'ctagsbin'  : 'gotags',
 		\ 'ctagsargs' : ''
 	\ }
