@@ -107,10 +107,8 @@ func createFuncTag(f *ast.FuncDecl) string {
 		}
 
 		// parameter type
-		if t, ok := param.Type.(*ast.Ident); ok {
-			sig.WriteByte(' ')
-			sig.WriteString(t.Name)
-		}
+		sig.WriteByte(' ')
+		sig.WriteString(getParamType(param.Type))
 
 		if i < len(f.Type.Params.List)-1 {
 			sig.WriteString(", ")
@@ -122,4 +120,16 @@ func createFuncTag(f *ast.FuncDecl) string {
 	// TODO: receiver
 
 	return tag.String()
+}
+
+func getParamType(node ast.Node) (paramType string) {
+	switch t := node.(type) {
+	case *ast.Ident:
+		paramType = t.Name
+	case *ast.StarExpr:
+		paramType = "*" + getParamType(t.X)
+	case *ast.SelectorExpr:
+		paramType = getParamType(t.X) + "." + getParamType(t.Sel)
+	}
+	return
 }
