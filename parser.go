@@ -65,13 +65,7 @@ func (p *tagParser) parseDeclarations(f *ast.File) {
 			for _, s := range decl.Specs {
 				switch ts := s.(type) {
 				case *ast.TypeSpec:
-					tag := p.createTag(ts.Name.Name, ts.Pos(), "t")
-					if ast.IsExported(tag.Name) {
-						tag.Fields["access"] = "public"
-					} else {
-						tag.Fields["access"] = "private"
-					}
-					p.tags = append(p.tags, tag)
+					p.parseTypeDeclaration(ts)
 				case *ast.ValueSpec:
 					if len(ts.Names) > 0 {
 						tag := p.createTag(ts.Names[0].Name, ts.Pos(), "v")
@@ -95,11 +89,7 @@ func (p *tagParser) parseFunction(f *ast.FuncDecl) {
 	tag := p.createTag(f.Name.Name, f.Pos(), "f")
 
 	// access
-	if ast.IsExported(tag.Name) {
-		tag.Fields["access"] = "public"
-	} else {
-		tag.Fields["access"] = "private"
-	}
+	tag.Fields["access"] = getAccess(tag.Name)
 
 	// signature
 	var sig bytes.Buffer
@@ -132,6 +122,14 @@ func (p *tagParser) parseFunction(f *ast.FuncDecl) {
 	p.tags = append(p.tags, tag)
 }
 
+func (p *tagParser) parseTypeDeclaration(ts *ast.TypeSpec) {
+	tag := p.createTag(ts.Name.Name, ts.Pos(), "t")
+
+	tag.Fields["access"] = getAccess(tag.Name)
+
+	p.tags = append(p.tags, tag)
+}
+
 func (p *tagParser) createTag(name string, pos token.Pos, tagtype string) Tag {
 	return NewTag(name, p.fset.File(pos).Name(), p.fset.Position(pos).Line, tagtype)
 }
@@ -148,6 +146,15 @@ func getType(node ast.Node, star bool) (paramType string) {
 		}
 	case *ast.SelectorExpr:
 		paramType = getType(t.X, star) + "." + getType(t.Sel, star)
+	}
+	return
+}
+
+func getAccess(name string) (access string) {
+	if ast.IsExported(name) {
+		access = "public"
+	} else {
+		access = "private"
 	}
 	return
 }
