@@ -20,7 +20,7 @@ type Struct struct {
 	field3 *bool
 }
 
-type MyInt int
+type myInt int
 
-func (m MyInt) F1() {
+func (m myInt) F1() {
 }

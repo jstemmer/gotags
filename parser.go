@@ -65,7 +65,13 @@ func (p *tagParser) parseDeclarations(f *ast.File) {
 			for _, s := range decl.Specs {
 				switch ts := s.(type) {
 				case *ast.TypeSpec:
-					p.tags = append(p.tags, p.createTag(ts.Name.Name, ts.Pos(), "t"))
+					tag := p.createTag(ts.Name.Name, ts.Pos(), "t")
+					if ast.IsExported(tag.Name) {
+						tag.Fields["access"] = "public"
+					} else {
+						tag.Fields["access"] = "private"
+					}
+					p.tags = append(p.tags, tag)
 				case *ast.ValueSpec:
 					if len(ts.Names) > 0 {
 						tag := p.createTag(ts.Names[0].Name, ts.Pos(), "v")
