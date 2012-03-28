@@ -122,6 +122,8 @@ func (p *tagParser) parseTypeDeclaration(ts *ast.TypeSpec) {
 func (p *tagParser) parseValueDeclaration(v *ast.ValueSpec) {
 	tag := p.createTag(v.Names[0].Name, v.Pos(), "v")
 
+	tag.Fields["access"] = getAccess(tag.Name)
+
 	switch v.Names[0].Obj.Kind {
 	case ast.Var:
 		tag.Type = "v"

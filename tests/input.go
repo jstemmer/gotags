@@ -6,7 +6,7 @@ import (
 
 var variable int
 
-const constant = "const"
+const Constant = "const"
 
 func Function1() string {
 }

@@ -7,8 +7,8 @@ import (
 var expectedTags = []Tag{
 	Tag{Name: "TestPackage", File: "tests/input.go", Address: "1", Type: "p", Fields: map[string]string{"line": "1"}},
 	Tag{Name: "go/ast", File: "tests/input.go", Address: "4", Type: "i", Fields: map[string]string{"line": "4"}},
-	Tag{Name: "variable", File: "tests/input.go", Address: "7", Type: "v", Fields: map[string]string{"line": "7"}},
-	Tag{Name: "constant", File: "tests/input.go", Address: "9", Type: "c", Fields: map[string]string{"line": "9"}},
+	Tag{Name: "variable", File: "tests/input.go", Address: "7", Type: "v", Fields: map[string]string{"line": "7", "access": "private"}},
+	Tag{Name: "Constant", File: "tests/input.go", Address: "9", Type: "c", Fields: map[string]string{"line": "9", "access": "public"}},
 	Tag{Name: "Function1", File: "tests/input.go", Address: "11", Type: "f", Fields: map[string]string{"line": "11", "access": "public", "signature": "()"}},
 	Tag{Name: "function2", File: "tests/input.go", Address: "14", Type: "f", Fields: map[string]string{"line": "14", "access": "private", "signature": "(p1, p2 int, p3 *string)"}},
 	Tag{Name: "Struct", File: "tests/input.go", Address: "17", Type: "t", Fields: map[string]string{"line": "17", "access": "public"}},
