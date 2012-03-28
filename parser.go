@@ -60,7 +60,7 @@ func (p *tagParser) parseDeclarations(f *ast.File) {
 	for _, d := range f.Decls {
 		switch decl := d.(type) {
 		case *ast.FuncDecl:
-			p.tags = append(p.tags, p.createFuncTag(decl))
+			p.parseFunction(decl)
 		case *ast.GenDecl:
 			for _, s := range decl.Specs {
 				switch ts := s.(type) {
@@ -91,11 +91,7 @@ func (p *tagParser) parseDeclarations(f *ast.File) {
 	}
 }
 
-func (p *tagParser) createTag(name string, pos token.Pos, tagtype string) Tag {
-	return NewTag(name, p.fset.File(pos).Name(), p.fset.Position(pos).Line, tagtype)
-}
-
-func (p *tagParser) createFuncTag(f *ast.FuncDecl) Tag {
+func (p *tagParser) parseFunction(f *ast.FuncDecl) {
 	tag := p.createTag(f.Name.Name, f.Pos(), "f")
 
 	// access
@@ -133,7 +129,11 @@ func (p *tagParser) createFuncTag(f *ast.FuncDecl) Tag {
 		tag.Fields["type"] = getType(f.Recv.List[0].Type, false)
 	}
 
-	return tag
+	p.tags = append(p.tags, tag)
+}
+
+func (p *tagParser) createTag(name string, pos token.Pos, tagtype string) Tag {
+	return NewTag(name, p.fset.File(pos).Name(), p.fset.Position(pos).Line, tagtype)
 }
 
 func getType(node ast.Node, star bool) (paramType string) {
