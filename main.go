@@ -17,15 +17,14 @@ var (
 func init() {
 	flag.BoolVar(&sortOutput, "sort", true, "sort tags")
 	flag.BoolVar(&silent, "silent", false, "do not produce any output on error")
-}
-
-func main() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "gotags version %s\n\n", VERSION)
 		fmt.Fprintf(os.Stderr, "Usage: %s [options] file\n\n", os.Args[0])
 		flag.PrintDefaults()
 	}
+}
 
+func main() {
 	flag.Parse()
 	if flag.NArg() == 0 {
 		fmt.Fprintf(os.Stderr, "no file specified\n\n")
