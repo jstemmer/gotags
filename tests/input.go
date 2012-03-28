@@ -24,3 +24,7 @@ type myInt int
 
 func (m myInt) F1() {
 }
+
+type TestEmbed struct {
+	Struct
+}

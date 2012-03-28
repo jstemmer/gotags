@@ -17,6 +17,8 @@ var expectedTags = []Tag{
 	Tag{Name: "field3", File: "tests/input.go", Address: "20", Type: "w", Fields: map[string]string{"line": "20", "access": "private", "type": "Struct"}},
 	Tag{Name: "myInt", File: "tests/input.go", Address: "23", Type: "t", Fields: map[string]string{"line": "23", "access": "private"}},
 	Tag{Name: "F1", File: "tests/input.go", Address: "25", Type: "f", Fields: map[string]string{"line": "25", "access": "public", "signature": "()", "type": "myInt"}},
+	Tag{Name: "TestEmbed", File: "tests/input.go", Address: "28", Type: "t", Fields: map[string]string{"line": "28", "access": "public"}},
+	Tag{Name: "Struct", File: "tests/input.go", Address: "29", Type: "w", Fields: map[string]string{"line": "29", "access": "public", "type": "TestEmbed"}},
 }
 
 func TestParse(t *testing.T) {

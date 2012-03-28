@@ -151,7 +151,12 @@ func (p *tagParser) parseValueDeclaration(v *ast.ValueSpec) {
 
 func (p *tagParser) parseStructFields(name string, s *ast.StructType) {
 	for _, f := range s.Fields.List {
-		tag := p.createTag(f.Names[0].Name, f.Names[0].Pos(), "w")
+		var tag Tag
+		if len(f.Names) > 0 {
+			tag = p.createTag(f.Names[0].Name, f.Names[0].Pos(), "w")
+		} else if t, ok := f.Type.(*ast.Ident); ok {
+			tag = p.createTag(t.Name, t.Pos(), "w")
+		}
 
 		tag.Fields["access"] = getAccess(tag.Name)
 		tag.Fields["type"] = name
