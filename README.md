@@ -1,14 +1,14 @@
 gotags
 ======
 
-Exuberant-ctags compatible tag generator for Go.
+[Exuberant-ctags][] compatible tag generator for [Go][].
 
 Installation
 ------------
 	go get github.com/jstemmer/go-tags
 	go install github.com/jstemmer/go-tags
 
-Vim [Tagbar](http://majutsushi.github.com/tagbar/) configuration
+Vim [Tagbar][] configuration
 ----------------------------------------------------------------
 	let g:tagbar_type_go = {
 		\ 'ctagstype' : 'go',
@@ -28,5 +28,9 @@ Vim [Tagbar](http://majutsushi.github.com/tagbar/) configuration
 			\ 'type' : 't'
 		\ },
 		\ 'ctagsbin'  : 'gotags',
-		\ 'ctagsargs' : ''
+		\ 'ctagsargs' : '-sort -silent'
 	\ }
+
+[exuberant-ctags]: http://ctags.sourceforge.net
+[go]: http://golang.org
+[tagbar]: http://majutsushi.github.com/tagbar/
