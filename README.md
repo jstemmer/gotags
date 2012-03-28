@@ -18,6 +18,7 @@ Vim [Tagbar][] configuration
 			\ 'c:constants',
 			\ 'v:variables',
 			\ 't:types',
+			\ 'w:fields',
 			\ 'f:funcs'
 		\ ],
 		\ 'sro' : '.',

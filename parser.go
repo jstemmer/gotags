@@ -128,6 +128,10 @@ func (p *tagParser) parseTypeDeclaration(ts *ast.TypeSpec) {
 	tag.Fields["access"] = getAccess(tag.Name)
 
 	p.tags = append(p.tags, tag)
+
+	if s, ok := ts.Type.(*ast.StructType); ok {
+		p.parseStructFields(tag.Name, s)
+	}
 }
 
 func (p *tagParser) parseValueDeclaration(v *ast.ValueSpec) {
@@ -143,6 +147,17 @@ func (p *tagParser) parseValueDeclaration(v *ast.ValueSpec) {
 	}
 
 	p.tags = append(p.tags, tag)
+}
+
+func (p *tagParser) parseStructFields(name string, s *ast.StructType) {
+	for _, f := range s.Fields.List {
+		tag := p.createTag(f.Names[0].Name, f.Names[0].Pos(), "w")
+
+		tag.Fields["access"] = getAccess(tag.Name)
+		tag.Fields["type"] = name
+
+		p.tags = append(p.tags, tag)
+	}
 }
 
 func (p *tagParser) createTag(name string, pos token.Pos, tagtype string) Tag {
