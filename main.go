@@ -12,7 +12,7 @@ const VERSION = "0.0.1"
 var (
 	sortOutput bool
 	silent     bool
-	printTree bool
+	printTree  bool
 )
 
 func init() {
@@ -22,7 +22,7 @@ func init() {
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "gotags version %s\n\n", VERSION)
-		fmt.Fprintf(os.Stderr, "Usage: %s [options] file\n\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %s [options] file(s)\n\n", os.Args[0])
 		flag.PrintDefaults()
 	}
 }
@@ -40,13 +40,16 @@ func main() {
 		return
 	}
 
-	tags, err := Parse(flag.Arg(0))
-	if err != nil {
-		if !silent {
-			fmt.Fprintf(os.Stderr, "parse error: %s\n\n", err)
-			flag.Usage()
+	tags := make([]Tag, 0)
+	for _, file := range flag.Args() {
+		ts, err := Parse(file)
+		if err != nil {
+			if !silent {
+				fmt.Fprintf(os.Stderr, "parse error: %s\n\n", err)
+			}
+			continue
 		}
-		os.Exit(1)
+		tags = append(tags, ts...)
 	}
 
 	output := createMetaTags()

@@ -8,6 +8,11 @@ Installation
 	go get github.com/jstemmer/go-tags
 	go install github.com/jstemmer/go-tags
 
+Usage
+-----
+
+	gotags [options] file(s)
+
 Vim [Tagbar][] configuration
 ----------------------------------------------------------------
 	let g:tagbar_type_go = {
