@@ -13,9 +13,9 @@ type Tag struct {
 	Fields  map[string]string
 }
 
-func NewTag(name, file string, line int, tagtype string) *Tag {
+func NewTag(name, file string, line int, tagtype string) Tag {
 	l := strconv.Itoa(line)
-	return &Tag{
+	return Tag{
 		Name:    name,
 		File:    file,
 		Address: l,
