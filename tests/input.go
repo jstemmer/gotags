@@ -6,7 +6,8 @@ import (
 
 var variable int
 
-const Constant = "const"
+const Constant string = "const"
+const OtherConst = "const"
 
 func Function1() string {
 }
@@ -22,7 +23,7 @@ type Struct struct {
 
 type myInt int
 
-func (m myInt) F1() {
+func (m myInt) F1() ([]bool, [2]*string) {
 }
 
 type TestEmbed struct {

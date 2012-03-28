@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bytes"
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -88,31 +88,12 @@ func (p *tagParser) parseDeclarations(f *ast.File) {
 func (p *tagParser) parseFunction(f *ast.FuncDecl) {
 	tag := p.createTag(f.Name.Name, f.Pos(), "f")
 
-	// access
 	tag.Fields["access"] = getAccess(tag.Name)
+	tag.Fields["signature"] = fmt.Sprintf("(%s)", getTypes(f.Type.Params.List))
 
-	// signature
-	var sig bytes.Buffer
-	sig.WriteByte('(')
-	for i, param := range f.Type.Params.List {
-		// parameter names
-		for j, n := range param.Names {
-			sig.WriteString(n.Name)
-			if j < len(param.Names)-1 {
-				sig.WriteString(", ")
-			}
-		}
-
-		// parameter type
-		sig.WriteByte(' ')
-		sig.WriteString(getType(param.Type, true))
-
-		if i < len(f.Type.Params.List)-1 {
-			sig.WriteString(", ")
-		}
+	if f.Type.Results != nil {
+		tag.Fields["type"] = getTypes(f.Type.Results.List)
 	}
-	sig.WriteByte(')')
-	tag.Fields["signature"] = sig.String()
 
 	// receiver
 	if f.Recv != nil && len(f.Recv.List) > 0 {
@@ -129,8 +110,12 @@ func (p *tagParser) parseTypeDeclaration(ts *ast.TypeSpec) {
 
 	p.tags = append(p.tags, tag)
 
-	if s, ok := ts.Type.(*ast.StructType); ok {
+	switch s := ts.Type.(type) {
+	case *ast.StructType:
+		tag.Fields["type"] = "struct"
 		p.parseStructFields(tag.Name, s)
+	case *ast.Ident:
+		tag.Fields["type"] = s.Name
 	}
 }
 
@@ -138,6 +123,9 @@ func (p *tagParser) parseValueDeclaration(v *ast.ValueSpec) {
 	tag := p.createTag(v.Names[0].Name, v.Pos(), "v")
 
 	tag.Fields["access"] = getAccess(tag.Name)
+	if v.Type != nil {
+		tag.Fields["type"] = getType(v.Type, true)
+	}
 
 	switch v.Names[0].Obj.Kind {
 	case ast.Var:
@@ -160,6 +148,7 @@ func (p *tagParser) parseStructFields(name string, s *ast.StructType) {
 
 		tag.Fields["access"] = getAccess(tag.Name)
 		tag.Fields["ctype"] = name
+		tag.Fields["type"] = getType(f.Type, true)
 
 		p.tags = append(p.tags, tag)
 	}
@@ -167,6 +156,24 @@ func (p *tagParser) parseStructFields(name string, s *ast.StructType) {
 
 func (p *tagParser) createTag(name string, pos token.Pos, tagtype string) Tag {
 	return NewTag(name, p.fset.File(pos).Name(), p.fset.Position(pos).Line, tagtype)
+}
+
+func getTypes(fields []*ast.Field) string {
+	types := make([]string, len(fields))
+	for i, param := range fields {
+		if len(param.Names) > 0 {
+			// parameter names
+			names := make([]string, len(param.Names))
+			for j, n := range param.Names {
+				names[j] = n.Name
+			}
+			types[i] = fmt.Sprintf("%s %s", strings.Join(names, ", "), getType(param.Type, true))
+		} else {
+			types[i] = getType(param.Type, true)
+		}
+	}
+
+	return strings.Join(types, ", ")
 }
 
 func getType(node ast.Node, star bool) (paramType string) {
@@ -181,6 +188,12 @@ func getType(node ast.Node, star bool) (paramType string) {
 		}
 	case *ast.SelectorExpr:
 		paramType = getType(t.X, star) + "." + getType(t.Sel, star)
+	case *ast.ArrayType:
+		if l, ok := t.Len.(*ast.BasicLit); ok {
+			paramType = fmt.Sprintf("[%s]%s", l.Value, getType(t.Elt, star))
+		} else {
+			paramType = "[]" + getType(t.Elt, star)
+		}
 	}
 	return
 }
