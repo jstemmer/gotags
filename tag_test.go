@@ -4,17 +4,16 @@ import (
 	"testing"
 )
 
-func TestTag(t *testing.T) {
-	tag := NewTag("tagname", "filename", 1, "type")
-	tag.Fields["test"] = "value"
+func TestTagString(t *testing.T) {
+	tag := NewTag("tagname", "filename", 2, "x")
+	tag.Fields["access"] = "public"
+	tag.Fields["type"] = "struct"
+	tag.Fields["signature"] = "()"
 
-	expected := []string{
-		"tagname\tfilename\t1;\"\ttype\tline:1\ttest:value",
-		"tagname\tfilename\t1;\"\ttype\ttest:value\tline:1",
-	}
+	expected := "tagname\tfilename\t2;\"\tx\taccess:public\tline:2\tsignature:()\ttype:struct"
 
 	s := tag.String()
-	if s != expected[0] && s != expected[1] {
-		t.Errorf("Tag.String() == %s, want %s", s, expected[0])
+	if s != expected {
+		t.Errorf("Tag.String()\n  is:%s\nwant:%s", s, expected)
 	}
 }

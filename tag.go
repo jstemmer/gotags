@@ -2,7 +2,10 @@ package main
 
 import (
 	"bytes"
+	"fmt"
+	"sort"
 	"strconv"
+	"strings"
 )
 
 type Tag struct {
@@ -34,13 +37,17 @@ func (t Tag) String() string {
 	b.WriteString(t.Address)
 	b.WriteString(";\"\t")
 	b.WriteString(t.Type)
+	b.WriteByte('\t')
 
+	fields := make([]string, len(t.Fields))
+	i := 0
 	for k, v := range t.Fields {
-		b.WriteByte('\t')
-		b.WriteString(k)
-		b.WriteByte(':')
-		b.WriteString(v)
+		fields[i] = fmt.Sprintf("%s:%s", k, v)
+		i++
 	}
+
+	sort.Sort(sort.StringSlice(fields))
+	b.WriteString(strings.Join(fields, "\t"))
 
 	return b.String()
 }
