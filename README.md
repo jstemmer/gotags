@@ -5,8 +5,8 @@ gotags
 
 Installation
 ------------
+
 	go get github.com/jstemmer/go-tags
-	go install github.com/jstemmer/go-tags
 
 Usage
 -----
@@ -28,10 +28,10 @@ Vim [Tagbar][] configuration
 		\ ],
 		\ 'sro' : '.',
 		\ 'kind2scope' : {
-			\ 't' : 'type'
+			\ 't' : 'ctype'
 		\ },
 		\ 'scope2kind' : {
-			\ 'type' : 't'
+			\ 'ctype' : 't'
 		\ },
 		\ 'ctagsbin'  : 'gotags',
 		\ 'ctagsargs' : '-sort -silent'

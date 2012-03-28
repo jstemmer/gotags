@@ -116,7 +116,7 @@ func (p *tagParser) parseFunction(f *ast.FuncDecl) {
 
 	// receiver
 	if f.Recv != nil && len(f.Recv.List) > 0 {
-		tag.Fields["type"] = getType(f.Recv.List[0].Type, false)
+		tag.Fields["ctype"] = getType(f.Recv.List[0].Type, false)
 	}
 
 	p.tags = append(p.tags, tag)
@@ -159,7 +159,7 @@ func (p *tagParser) parseStructFields(name string, s *ast.StructType) {
 		}
 
 		tag.Fields["access"] = getAccess(tag.Name)
-		tag.Fields["type"] = name
+		tag.Fields["ctype"] = name
 
 		p.tags = append(p.tags, tag)
 	}
