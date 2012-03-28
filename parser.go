@@ -13,18 +13,29 @@ type tagParser struct {
 	tags []Tag
 }
 
+func PrintTree(filename string) error {
+	fset := token.NewFileSet()
+	f, err := parser.ParseFile(fset, filename, nil, 0)
+	if err != nil {
+		return err
+	}
+
+	ast.Print(fset, f)
+	return nil
+}
+
 func Parse(filename string) ([]Tag, error) {
-	parser := &tagParser{
+	p := &tagParser{
 		fset: token.NewFileSet(),
 		tags: make([]Tag, 0),
 	}
 
-	err := parser.parseFile(filename)
+	err := p.parseFile(filename)
 	if err != nil {
 		return nil, err
 	}
 
-	return parser.tags, nil
+	return p.tags, nil
 }
 
 func (p *tagParser) parseFile(filename string) error {
