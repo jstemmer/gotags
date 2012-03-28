@@ -67,18 +67,7 @@ func (p *tagParser) parseDeclarations(f *ast.File) {
 				case *ast.TypeSpec:
 					p.parseTypeDeclaration(ts)
 				case *ast.ValueSpec:
-					if len(ts.Names) > 0 {
-						tag := p.createTag(ts.Names[0].Name, ts.Pos(), "v")
-
-						switch ts.Names[0].Obj.Kind {
-						case ast.Var:
-							tag.Type = "v"
-						case ast.Con:
-							tag.Type = "c"
-						}
-
-						p.tags = append(p.tags, tag)
-					}
+					p.parseValueDeclaration(ts)
 				}
 			}
 		}
@@ -126,6 +115,19 @@ func (p *tagParser) parseTypeDeclaration(ts *ast.TypeSpec) {
 	tag := p.createTag(ts.Name.Name, ts.Pos(), "t")
 
 	tag.Fields["access"] = getAccess(tag.Name)
+
+	p.tags = append(p.tags, tag)
+}
+
+func (p *tagParser) parseValueDeclaration(v *ast.ValueSpec) {
+	tag := p.createTag(v.Names[0].Name, v.Pos(), "v")
+
+	switch v.Names[0].Obj.Kind {
+	case ast.Var:
+		tag.Type = "v"
+	case ast.Con:
+		tag.Type = "c"
+	}
 
 	p.tags = append(p.tags, tag)
 }
