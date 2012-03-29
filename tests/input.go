@@ -21,6 +21,10 @@ type Struct struct {
 	field3 *bool
 }
 
+func NewStruct() *Struct {
+	return &Struct{}
+}
+
 type myInt int
 
 func (m myInt) F1() ([]bool, [2]*string) {

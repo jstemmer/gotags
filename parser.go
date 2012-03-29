@@ -100,6 +100,15 @@ func (p *tagParser) parseFunction(f *ast.FuncDecl) {
 		tag.Fields["ctype"] = getType(f.Recv.List[0].Type, false)
 	}
 
+	// check if this is a constructor, in that case it belongs to that type
+	if strings.HasPrefix(tag.Name, "New") && len(tag.Fields["type"]) > 0 {
+		if tag.Name[3:] == tag.Fields["type"] {
+			tag.Fields["ctype"] = tag.Fields["type"]
+		} else if tag.Fields["type"][0] == '*' && tag.Name[3:] == tag.Fields["type"][1:] {
+			tag.Fields["ctype"] = tag.Fields["type"][1:]
+		}
+	}
+
 	p.tags = append(p.tags, tag)
 }
 

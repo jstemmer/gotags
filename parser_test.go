@@ -20,12 +20,13 @@ var expectedTags = []Tag{
 	tag("field2", "20", "w", F{"access": "private", "ctype": "Struct", "type": "string"}),
 	tag("field3", "21", "w", F{"access": "private", "ctype": "Struct", "type": "*bool"}),
 	tag("Struct", "18", "t", F{"access": "public", "type": "struct"}),
-	tag("myInt", "24", "t", F{"access": "private", "type": "int"}),
-	tag("F1", "26", "f", F{"access": "public", "signature": "()", "ctype": "myInt", "type": "[]bool, [2]*string"}),
-	tag("Struct", "30", "w", F{"access": "public", "ctype": "TestEmbed", "type": "Struct"}),
-	tag("TestEmbed", "29", "t", F{"access": "public", "type": "struct"}),
-	tag("InterfaceMethod", "34", "f", F{"access": "public", "signature": "(int)", "ntype": "Interface", "type": "string"}),
-	tag("Interface", "33", "n", F{"access": "public", "type": "interface"}),
+	tag("NewStruct", "24", "f", F{"access": "public", "signature": "()", "ctype": "Struct", "type": "*Struct"}),
+	tag("myInt", "28", "t", F{"access": "private", "type": "int"}),
+	tag("F1", "30", "f", F{"access": "public", "signature": "()", "ctype": "myInt", "type": "[]bool, [2]*string"}),
+	tag("Struct", "34", "w", F{"access": "public", "ctype": "TestEmbed", "type": "Struct"}),
+	tag("TestEmbed", "33", "t", F{"access": "public", "type": "struct"}),
+	tag("InterfaceMethod", "38", "f", F{"access": "public", "signature": "(int)", "ntype": "Interface", "type": "string"}),
+	tag("Interface", "37", "n", F{"access": "public", "type": "interface"}),
 }
 
 func TestParse(t *testing.T) {
