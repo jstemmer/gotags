@@ -29,3 +29,7 @@ func (m myInt) F1() ([]bool, [2]*string) {
 type TestEmbed struct {
 	Struct
 }
+
+type Interface interface {
+	InterfaceMethod(int) string
+}

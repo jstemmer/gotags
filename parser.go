@@ -108,15 +108,19 @@ func (p *tagParser) parseTypeDeclaration(ts *ast.TypeSpec) {
 
 	tag.Fields["access"] = getAccess(tag.Name)
 
-	p.tags = append(p.tags, tag)
-
 	switch s := ts.Type.(type) {
 	case *ast.StructType:
 		tag.Fields["type"] = "struct"
 		p.parseStructFields(tag.Name, s)
+	case *ast.InterfaceType:
+		tag.Fields["type"] = "interface"
+		tag.Type = "n"
+		p.parseInterfaceMethods(tag.Name, s)
 	case *ast.Ident:
 		tag.Fields["type"] = s.Name
 	}
+
+	p.tags = append(p.tags, tag)
 }
 
 func (p *tagParser) parseValueDeclaration(v *ast.ValueSpec) {
@@ -149,6 +153,23 @@ func (p *tagParser) parseStructFields(name string, s *ast.StructType) {
 		tag.Fields["access"] = getAccess(tag.Name)
 		tag.Fields["ctype"] = name
 		tag.Fields["type"] = getType(f.Type, true)
+
+		p.tags = append(p.tags, tag)
+	}
+}
+
+func (p *tagParser) parseInterfaceMethods(name string, s *ast.InterfaceType) {
+	for _, f := range s.Methods.List {
+		tag := p.createTag(f.Names[0].Name, f.Names[0].Pos(), "f")
+
+		tag.Fields["access"] = getAccess(tag.Name)
+
+		if t, ok := f.Type.(*ast.FuncType); ok {
+			tag.Fields["signature"] = fmt.Sprintf("(%s)", getTypes(t.Params.List))
+			tag.Fields["type"] = getTypes(t.Results.List)
+		}
+
+		tag.Fields["ctype"] = name
 
 		p.tags = append(p.tags, tag)
 	}
