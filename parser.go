@@ -169,7 +169,12 @@ func (p *tagParser) parseStructFields(name string, s *ast.StructType) {
 
 func (p *tagParser) parseInterfaceMethods(name string, s *ast.InterfaceType) {
 	for _, f := range s.Methods.List {
-		tag := p.createTag(f.Names[0].Name, f.Names[0].Pos(), "f")
+		var tag Tag
+		if len(f.Names) > 0 {
+			tag = p.createTag(f.Names[0].Name, f.Names[0].Pos(), "f")
+		} else {
+			tag = p.createTag(getType(f.Type, true), f.Pos(), "f")
+		}
 
 		tag.Fields["access"] = getAccess(tag.Name)
 

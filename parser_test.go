@@ -28,6 +28,7 @@ var expectedTags = []Tag{
 	tag("TestEmbed", "33", "t", F{"access": "public", "type": "struct"}),
 	tag("InterfaceMethod", "39", "f", F{"access": "public", "signature": "(int)", "ntype": "Interface", "type": "string"}),
 	tag("OtherMethod", "40", "f", F{"access": "public", "signature": "()", "ntype": "Interface"}),
+	tag("io.Reader", "41", "f", F{"access": "public", "ntype": "Interface"}),
 	tag("Interface", "38", "n", F{"access": "public", "type": "interface"}),
 }
 
