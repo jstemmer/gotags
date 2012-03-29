@@ -89,10 +89,10 @@ func (p *tagParser) parseFunction(f *ast.FuncDecl) {
 	tag := p.createTag(f.Name.Name, f.Pos(), "f")
 
 	tag.Fields["access"] = getAccess(tag.Name)
-	tag.Fields["signature"] = fmt.Sprintf("(%s)", getTypes(f.Type.Params.List))
+	tag.Fields["signature"] = fmt.Sprintf("(%s)", getTypes(f.Type.Params.List, true))
 
 	if f.Type.Results != nil {
-		tag.Fields["type"] = getTypes(f.Type.Results.List)
+		tag.Fields["type"] = getTypes(f.Type.Results.List, false)
 	}
 
 	// receiver
@@ -193,9 +193,9 @@ func (p *tagParser) parseInterfaceMethods(name string, s *ast.InterfaceType) {
 		tag.Fields["access"] = getAccess(tag.Name)
 
 		if t, ok := f.Type.(*ast.FuncType); ok {
-			tag.Fields["signature"] = fmt.Sprintf("(%s)", getTypes(t.Params.List))
+			tag.Fields["signature"] = fmt.Sprintf("(%s)", getTypes(t.Params.List, true))
 			if t.Results != nil {
-				tag.Fields["type"] = getTypes(t.Results.List)
+				tag.Fields["type"] = getTypes(t.Results.List, false)
 			}
 		}
 
@@ -209,10 +209,10 @@ func (p *tagParser) createTag(name string, pos token.Pos, tagtype string) Tag {
 	return NewTag(name, p.fset.File(pos).Name(), p.fset.Position(pos).Line, tagtype)
 }
 
-func getTypes(fields []*ast.Field) string {
+func getTypes(fields []*ast.Field, includeNames bool) string {
 	types := make([]string, len(fields))
 	for i, param := range fields {
-		if len(param.Names) > 0 {
+		if includeNames && len(param.Names) > 0 {
 			// parameter names
 			names := make([]string, len(param.Names))
 			for j, n := range param.Names {
@@ -248,10 +248,11 @@ func getType(node ast.Node, star bool) (paramType string) {
 	case *ast.FuncType:
 		var fparams, fresult string
 		if t.Params != nil {
-			fparams = getTypes(t.Params.List)
+			fparams = getTypes(t.Params.List, true)
 		}
+
 		if t.Results != nil {
-			fresult = getTypes(t.Results.List)
+			fresult = getTypes(t.Results.List, false)
 		}
 
 		if len(fresult) > 0 {
