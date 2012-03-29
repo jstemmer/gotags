@@ -4,24 +4,28 @@ import (
 	"testing"
 )
 
+const file = "tests/input.go"
+
+type F map[string]string
+
 var expectedTags = []Tag{
-	Tag{Name: "TestPackage", File: "tests/input.go", Address: "1", Type: "p", Fields: map[string]string{"line": "1"}},
-	Tag{Name: "go/ast", File: "tests/input.go", Address: "4", Type: "i", Fields: map[string]string{"line": "4"}},
-	Tag{Name: "variable", File: "tests/input.go", Address: "7", Type: "v", Fields: map[string]string{"line": "7", "access": "private", "type": "int"}},
-	Tag{Name: "Constant", File: "tests/input.go", Address: "9", Type: "c", Fields: map[string]string{"line": "9", "access": "public", "type": "string"}},
-	Tag{Name: "OtherConst", File: "tests/input.go", Address: "10", Type: "c", Fields: map[string]string{"line": "10", "access": "public"}},
-	Tag{Name: "Function1", File: "tests/input.go", Address: "12", Type: "f", Fields: map[string]string{"line": "12", "access": "public", "signature": "()", "type": "string"}},
-	Tag{Name: "function2", File: "tests/input.go", Address: "15", Type: "f", Fields: map[string]string{"line": "15", "access": "private", "signature": "(p1, p2 int, p3 *string)"}},
-	Tag{Name: "Field1", File: "tests/input.go", Address: "19", Type: "w", Fields: map[string]string{"line": "19", "access": "public", "ctype": "Struct", "type": "int"}},
-	Tag{Name: "field2", File: "tests/input.go", Address: "20", Type: "w", Fields: map[string]string{"line": "20", "access": "private", "ctype": "Struct", "type": "string"}},
-	Tag{Name: "field3", File: "tests/input.go", Address: "21", Type: "w", Fields: map[string]string{"line": "21", "access": "private", "ctype": "Struct", "type": "*bool"}},
-	Tag{Name: "Struct", File: "tests/input.go", Address: "18", Type: "t", Fields: map[string]string{"line": "18", "access": "public", "type": "struct"}},
-	Tag{Name: "myInt", File: "tests/input.go", Address: "24", Type: "t", Fields: map[string]string{"line": "24", "access": "private", "type": "int"}},
-	Tag{Name: "F1", File: "tests/input.go", Address: "26", Type: "f", Fields: map[string]string{"line": "26", "access": "public", "signature": "()", "ctype": "myInt", "type": "[]bool, [2]*string"}},
-	Tag{Name: "Struct", File: "tests/input.go", Address: "30", Type: "w", Fields: map[string]string{"line": "30", "access": "public", "ctype": "TestEmbed", "type": "Struct"}},
-	Tag{Name: "TestEmbed", File: "tests/input.go", Address: "29", Type: "t", Fields: map[string]string{"line": "29", "access": "public", "type": "struct"}},
-	Tag{Name: "InterfaceMethod", File: "tests/input.go", Address: "34", Type: "f", Fields: map[string]string{"line": "34", "access": "public", "signature": "(int)", "ctype": "Interface", "type": "string"}},
-	Tag{Name: "Interface", File: "tests/input.go", Address: "33", Type: "n", Fields: map[string]string{"line": "33", "access": "public", "type": "interface"}},
+	tag("TestPackage", "1", "p", F{}),
+	tag("go/ast", "4", "i", F{}),
+	tag("variable", "7", "v", F{"access": "private", "type": "int"}),
+	tag("Constant", "9", "c", F{"access": "public", "type": "string"}),
+	tag("OtherConst", "10", "c", F{"access": "public"}),
+	tag("Function1", "12", "f", F{"access": "public", "signature": "()", "type": "string"}),
+	tag("function2", "15", "f", F{"access": "private", "signature": "(p1, p2 int, p3 *string)"}),
+	tag("Field1", "19", "w", F{"access": "public", "ctype": "Struct", "type": "int"}),
+	tag("field2", "20", "w", F{"access": "private", "ctype": "Struct", "type": "string"}),
+	tag("field3", "21", "w", F{"access": "private", "ctype": "Struct", "type": "*bool"}),
+	tag("Struct", "18", "t", F{"access": "public", "type": "struct"}),
+	tag("myInt", "24", "t", F{"access": "private", "type": "int"}),
+	tag("F1", "26", "f", F{"access": "public", "signature": "()", "ctype": "myInt", "type": "[]bool, [2]*string"}),
+	tag("Struct", "30", "w", F{"access": "public", "ctype": "TestEmbed", "type": "Struct"}),
+	tag("TestEmbed", "29", "t", F{"access": "public", "type": "struct"}),
+	tag("InterfaceMethod", "34", "f", F{"access": "public", "signature": "(int)", "ctype": "Interface", "type": "string"}),
+	tag("Interface", "33", "n", F{"access": "public", "type": "interface"}),
 }
 
 func TestParse(t *testing.T) {
@@ -39,4 +43,18 @@ func TestParse(t *testing.T) {
 			t.Errorf("tag(%d)\n  is:%s\nwant:%s", i, tags[i].String(), exp.String())
 		}
 	}
+}
+
+func tag(n, l, t string, fields F) (tag Tag) {
+	tag = Tag{
+		Name:    n,
+		File:    file,
+		Address: l,
+		Type:    t,
+		Fields:  fields,
+	}
+
+	tag.Fields["line"] = l
+
+	return
 }
