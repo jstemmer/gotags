@@ -98,14 +98,17 @@ func (p *tagParser) parseFunction(f *ast.FuncDecl) {
 	// receiver
 	if f.Recv != nil && len(f.Recv.List) > 0 {
 		tag.Fields["ctype"] = getType(f.Recv.List[0].Type, false)
+		tag.Type = "m"
 	}
 
 	// check if this is a constructor, in that case it belongs to that type
 	if strings.HasPrefix(tag.Name, "New") && len(tag.Fields["type"]) > 0 {
 		if tag.Name[3:] == tag.Fields["type"] {
 			tag.Fields["ctype"] = tag.Fields["type"]
+			tag.Type = "r"
 		} else if tag.Fields["type"][0] == '*' && tag.Name[3:] == tag.Fields["type"][1:] {
 			tag.Fields["ctype"] = tag.Fields["type"][1:]
+			tag.Type = "r"
 		}
 	}
 
@@ -162,7 +165,8 @@ func (p *tagParser) parseStructFields(name string, s *ast.StructType) {
 				p.tags = append(p.tags, tag)
 			}
 		} else {
-			tag = p.createTag(getType(f.Type, true), f.Pos(), "w")
+			// embedded field
+			tag = p.createTag(getType(f.Type, true), f.Pos(), "e")
 			tag.Fields["access"] = getAccess(tag.Name)
 			tag.Fields["ctype"] = name
 			tag.Fields["type"] = getType(f.Type, true)
@@ -175,9 +179,10 @@ func (p *tagParser) parseInterfaceMethods(name string, s *ast.InterfaceType) {
 	for _, f := range s.Methods.List {
 		var tag Tag
 		if len(f.Names) > 0 {
-			tag = p.createTag(f.Names[0].Name, f.Names[0].Pos(), "f")
+			tag = p.createTag(f.Names[0].Name, f.Names[0].Pos(), "m")
 		} else {
-			tag = p.createTag(getType(f.Type, true), f.Pos(), "f")
+			// embedded interface
+			tag = p.createTag(getType(f.Type, true), f.Pos(), "e")
 		}
 
 		tag.Fields["access"] = getAccess(tag.Name)

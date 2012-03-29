@@ -23,9 +23,12 @@ Vim [Tagbar][] configuration
 			\ 'c:constants',
 			\ 'v:variables',
 			\ 't:types',
-			\ 'w:fields',
 			\ 'n:interfaces',
-			\ 'f:funcs'
+			\ 'w:fields',
+			\ 'e:embedded',
+			\ 'm:methods',
+			\ 'r:constructor',
+			\ 'f:functions'
 		\ ],
 		\ 'sro' : '.',
 		\ 'kind2scope' : {
