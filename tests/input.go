@@ -32,6 +32,7 @@ func (m myInt) F1() ([]bool, [2]*string) {
 
 type TestEmbed struct {
 	Struct
+	*io.Writer
 }
 
 type Interface interface {

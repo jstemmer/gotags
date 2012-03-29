@@ -155,8 +155,8 @@ func (p *tagParser) parseStructFields(name string, s *ast.StructType) {
 		var tag Tag
 		if len(f.Names) > 0 {
 			tag = p.createTag(f.Names[0].Name, f.Names[0].Pos(), "w")
-		} else if t, ok := f.Type.(*ast.Ident); ok {
-			tag = p.createTag(t.Name, t.Pos(), "w")
+		} else {
+			tag = p.createTag(getType(f.Type, true), f.Pos(), "w")
 		}
 
 		tag.Fields["access"] = getAccess(tag.Name)
@@ -229,6 +229,10 @@ func getType(node ast.Node, star bool) (paramType string) {
 }
 
 func getAccess(name string) (access string) {
+	if idx := strings.LastIndex(name, "."); idx > -1 && idx < len(name) {
+		name = name[idx+1:]
+	}
+
 	if ast.IsExported(name) {
 		access = "public"
 	} else {

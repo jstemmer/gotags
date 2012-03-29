@@ -24,9 +24,10 @@ var expectedTags = []Tag{
 	tag("myInt", "28", "t", F{"access": "private", "type": "int"}),
 	tag("F1", "30", "f", F{"access": "public", "signature": "()", "ctype": "myInt", "type": "[]bool, [2]*string"}),
 	tag("Struct", "34", "w", F{"access": "public", "ctype": "TestEmbed", "type": "Struct"}),
+	tag("*io.Writer", "35", "w", F{"access": "public", "ctype": "TestEmbed", "type": "*io.Writer"}),
 	tag("TestEmbed", "33", "t", F{"access": "public", "type": "struct"}),
-	tag("InterfaceMethod", "38", "f", F{"access": "public", "signature": "(int)", "ntype": "Interface", "type": "string"}),
-	tag("Interface", "37", "n", F{"access": "public", "type": "interface"}),
+	tag("InterfaceMethod", "39", "f", F{"access": "public", "signature": "(int)", "ntype": "Interface", "type": "string"}),
+	tag("Interface", "38", "n", F{"access": "public", "type": "interface"}),
 }
 
 func TestParse(t *testing.T) {
