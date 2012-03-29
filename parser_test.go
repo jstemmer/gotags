@@ -31,6 +31,13 @@ var expectedTags = []Tag{
 	tag("OtherMethod", "40", "f", F{"access": "public", "signature": "()", "ntype": "Interface"}),
 	tag("io.Reader", "41", "f", F{"access": "public", "ntype": "Interface"}),
 	tag("Interface", "38", "n", F{"access": "public", "type": "interface"}),
+	tag("testArrayType", "44", "t", F{"access": "private", "type": "[4]int"}),
+	tag("testSliceType", "45", "t", F{"access": "private", "type": "[]int"}),
+	tag("testPointerType", "46", "t", F{"access": "private", "type": "*string"}),
+	tag("testFuncType1", "47", "t", F{"access": "private", "type": "func()"}),
+	tag("testFuncType2", "48", "t", F{"access": "private", "type": "func(int) string"}),
+	tag("testMapType", "49", "t", F{"access": "private", "type": "map[string]bool"}),
+	tag("testChanType", "50", "t", F{"access": "private", "type": "chan bool"}),
 }
 
 func TestParse(t *testing.T) {

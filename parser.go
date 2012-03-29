@@ -125,8 +125,8 @@ func (p *tagParser) parseTypeDeclaration(ts *ast.TypeSpec) {
 		tag.Fields["type"] = "interface"
 		tag.Type = "n"
 		p.parseInterfaceMethods(tag.Name, s)
-	case *ast.Ident:
-		tag.Fields["type"] = s.Name
+	default:
+		tag.Fields["type"] = getType(ts.Type, true)
 	}
 
 	p.tags = append(p.tags, tag)
@@ -235,6 +235,24 @@ func getType(node ast.Node, star bool) (paramType string) {
 		} else {
 			paramType = "[]" + getType(t.Elt, star)
 		}
+	case *ast.FuncType:
+		var fparams, fresult string
+		if t.Params != nil {
+			fparams = getTypes(t.Params.List)
+		}
+		if t.Results != nil {
+			fresult = getTypes(t.Results.List)
+		}
+
+		if len(fresult) > 0 {
+			paramType = fmt.Sprintf("func(%s) %s", fparams, fresult)
+		} else {
+			paramType = fmt.Sprintf("func(%s)", fparams)
+		}
+	case *ast.MapType:
+		paramType = fmt.Sprintf("map[%s]%s", getType(t.Key, true), getType(t.Value, true))
+	case *ast.ChanType:
+		paramType = fmt.Sprintf("chan %s", getType(t.Value, true))
 	}
 	return
 }
