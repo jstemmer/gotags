@@ -16,9 +16,9 @@ func function2(p1, p2 int, p3 *string) {
 }
 
 type Struct struct {
-	Field1 int
-	field2 string
-	field3 *bool
+	Field1, Field2 int
+	field3         string
+	field4         *bool
 }
 
 func NewStruct() *Struct {

@@ -154,16 +154,20 @@ func (p *tagParser) parseStructFields(name string, s *ast.StructType) {
 	for _, f := range s.Fields.List {
 		var tag Tag
 		if len(f.Names) > 0 {
-			tag = p.createTag(f.Names[0].Name, f.Names[0].Pos(), "w")
+			for _, n := range f.Names {
+				tag = p.createTag(n.Name, n.Pos(), "w")
+				tag.Fields["access"] = getAccess(tag.Name)
+				tag.Fields["ctype"] = name
+				tag.Fields["type"] = getType(f.Type, true)
+				p.tags = append(p.tags, tag)
+			}
 		} else {
 			tag = p.createTag(getType(f.Type, true), f.Pos(), "w")
+			tag.Fields["access"] = getAccess(tag.Name)
+			tag.Fields["ctype"] = name
+			tag.Fields["type"] = getType(f.Type, true)
+			p.tags = append(p.tags, tag)
 		}
-
-		tag.Fields["access"] = getAccess(tag.Name)
-		tag.Fields["ctype"] = name
-		tag.Fields["type"] = getType(f.Type, true)
-
-		p.tags = append(p.tags, tag)
 	}
 }
 
