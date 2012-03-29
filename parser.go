@@ -175,7 +175,9 @@ func (p *tagParser) parseInterfaceMethods(name string, s *ast.InterfaceType) {
 
 		if t, ok := f.Type.(*ast.FuncType); ok {
 			tag.Fields["signature"] = fmt.Sprintf("(%s)", getTypes(t.Params.List))
-			tag.Fields["type"] = getTypes(t.Results.List)
+			if t.Results != nil {
+				tag.Fields["type"] = getTypes(t.Results.List)
+			}
 		}
 
 		tag.Fields["ntype"] = name
