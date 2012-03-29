@@ -24,7 +24,7 @@ var expectedTags = []Tag{
 	tag("F1", "26", "f", F{"access": "public", "signature": "()", "ctype": "myInt", "type": "[]bool, [2]*string"}),
 	tag("Struct", "30", "w", F{"access": "public", "ctype": "TestEmbed", "type": "Struct"}),
 	tag("TestEmbed", "29", "t", F{"access": "public", "type": "struct"}),
-	tag("InterfaceMethod", "34", "f", F{"access": "public", "signature": "(int)", "ctype": "Interface", "type": "string"}),
+	tag("InterfaceMethod", "34", "f", F{"access": "public", "signature": "(int)", "ntype": "Interface", "type": "string"}),
 	tag("Interface", "33", "n", F{"access": "public", "type": "interface"}),
 }
 

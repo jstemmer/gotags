@@ -169,7 +169,7 @@ func (p *tagParser) parseInterfaceMethods(name string, s *ast.InterfaceType) {
 			tag.Fields["type"] = getTypes(t.Results.List)
 		}
 
-		tag.Fields["ctype"] = name
+		tag.Fields["ntype"] = name
 
 		p.tags = append(p.tags, tag)
 	}

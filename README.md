@@ -24,14 +24,17 @@ Vim [Tagbar][] configuration
 			\ 'v:variables',
 			\ 't:types',
 			\ 'w:fields',
+			\ 'n:interfaces',
 			\ 'f:funcs'
 		\ ],
 		\ 'sro' : '.',
 		\ 'kind2scope' : {
-			\ 't' : 'ctype'
+			\ 't' : 'ctype',
+			\ 'n' : 'ntype'
 		\ },
 		\ 'scope2kind' : {
-			\ 'ctype' : 't'
+			\ 'ctype' : 't',
+			\ 'ntype' : 'n'
 		\ },
 		\ 'ctagsbin'  : 'gotags',
 		\ 'ctagsargs' : '-sort -silent'
