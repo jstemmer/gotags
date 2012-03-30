@@ -1,10 +1,12 @@
 gotags
 ======
 
-[Exuberant-ctags][] compatible tag generator for [Go][].
+gotags is a [ctags][]-compatible tag generator for [Go][].
 
 Installation
 ------------
+
+Install gotags using the `go get` command:
 
 	go get github.com/jstemmer/go-tags
 
@@ -14,7 +16,10 @@ Usage
 	gotags [options] file(s)
 
 Vim [Tagbar][] configuration
-----------------------------------------------------------------
+----------------------------
+
+Put the following configuration in your vimrc:
+
 	let g:tagbar_type_go = {
 		\ 'ctagstype' : 'go',
 		\ 'kinds'     : [
@@ -43,6 +48,10 @@ Vim [Tagbar][] configuration
 		\ 'ctagsargs' : '-sort -silent'
 	\ }
 
-[exuberant-ctags]: http://ctags.sourceforge.net
+### Screenshot
+![vim Tagbar gotags](http://stemmertech.com/images/gotags-1.0.0-screenshot.png)
+
+[ctags]: http://ctags.sourceforge.net
 [go]: http://golang.org
 [tagbar]: http://majutsushi.github.com/tagbar/
+[screenshot]: https://github.com/jstemmer/gotags/gotags-1.0.0-screenshot.png
