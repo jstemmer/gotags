@@ -27,7 +27,7 @@ func PrintTree(filename string) error {
 func Parse(filename string) ([]Tag, error) {
 	p := &tagParser{
 		fset: token.NewFileSet(),
-		tags: make([]Tag, 0),
+		tags: []Tag{},
 	}
 
 	err := p.parseFile(filename)

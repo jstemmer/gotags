@@ -46,7 +46,7 @@ func main() {
 		return
 	}
 
-	tags := make([]Tag, 0)
+	tags := []Tag{}
 	for _, file := range flag.Args() {
 		ts, err := Parse(file)
 		if err != nil {
