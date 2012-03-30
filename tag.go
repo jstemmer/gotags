@@ -39,10 +39,13 @@ func (t Tag) String() string {
 	b.WriteString(t.Type)
 	b.WriteByte('\t')
 
-	fields := make([]string, len(t.Fields))
+	fields := make([]string, 0, len(t.Fields))
 	i := 0
 	for k, v := range t.Fields {
-		fields[i] = fmt.Sprintf("%s:%s", k, v)
+		if len(v) == 0 {
+			continue
+		}
+		fields = append(fields, fmt.Sprintf("%s:%s", k, v))
 		i++
 	}
 

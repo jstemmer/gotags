@@ -89,11 +89,8 @@ func (p *tagParser) parseFunction(f *ast.FuncDecl) {
 	tag := p.createTag(f.Name.Name, f.Pos(), "f")
 
 	tag.Fields["access"] = getAccess(tag.Name)
-	tag.Fields["signature"] = fmt.Sprintf("(%s)", getTypes(f.Type.Params.List, true))
-
-	if f.Type.Results != nil {
-		tag.Fields["type"] = getTypes(f.Type.Results.List, false)
-	}
+	tag.Fields["signature"] = fmt.Sprintf("(%s)", getTypes(f.Type.Params, true))
+	tag.Fields["type"] = getTypes(f.Type.Results, false)
 
 	// receiver
 	if f.Recv != nil && len(f.Recv.List) > 0 {
@@ -193,10 +190,8 @@ func (p *tagParser) parseInterfaceMethods(name string, s *ast.InterfaceType) {
 		tag.Fields["access"] = getAccess(tag.Name)
 
 		if t, ok := f.Type.(*ast.FuncType); ok {
-			tag.Fields["signature"] = fmt.Sprintf("(%s)", getTypes(t.Params.List, true))
-			if t.Results != nil {
-				tag.Fields["type"] = getTypes(t.Results.List, false)
-			}
+			tag.Fields["signature"] = fmt.Sprintf("(%s)", getTypes(t.Params, true))
+			tag.Fields["type"] = getTypes(t.Results, false)
 		}
 
 		tag.Fields["ntype"] = name
@@ -209,18 +204,22 @@ func (p *tagParser) createTag(name string, pos token.Pos, tagtype string) Tag {
 	return NewTag(name, p.fset.File(pos).Name(), p.fset.Position(pos).Line, tagtype)
 }
 
-func getTypes(fields []*ast.Field, includeNames bool) string {
-	types := make([]string, len(fields))
-	for i, param := range fields {
+func getTypes(fields *ast.FieldList, includeNames bool) string {
+	if fields == nil {
+		return ""
+	}
+
+	types := make([]string, len(fields.List))
+	for i, param := range fields.List {
+		types[i] = getType(param.Type, true)
+
 		if includeNames && len(param.Names) > 0 {
 			// parameter names
 			names := make([]string, len(param.Names))
 			for j, n := range param.Names {
 				names[j] = n.Name
 			}
-			types[i] = fmt.Sprintf("%s %s", strings.Join(names, ", "), getType(param.Type, true))
-		} else {
-			types[i] = getType(param.Type, true)
+			types[i] = fmt.Sprintf("%s %s", strings.Join(names, ", "), types[i])
 		}
 	}
 
@@ -246,14 +245,8 @@ func getType(node ast.Node, star bool) (paramType string) {
 			paramType = "[]" + getType(t.Elt, star)
 		}
 	case *ast.FuncType:
-		var fparams, fresult string
-		if t.Params != nil {
-			fparams = getTypes(t.Params.List, true)
-		}
-
-		if t.Results != nil {
-			fresult = getTypes(t.Results.List, false)
-		}
+		fparams := getTypes(t.Params, true)
+		fresult := getTypes(t.Results, false)
 
 		if len(fresult) > 0 {
 			paramType = fmt.Sprintf("func(%s) %s", fparams, fresult)

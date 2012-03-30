@@ -9,6 +9,7 @@ func TestTagString(t *testing.T) {
 	tag.Fields["access"] = "public"
 	tag.Fields["type"] = "struct"
 	tag.Fields["signature"] = "()"
+	tag.Fields["empty"] = ""
 
 	expected := "tagname\tfilename\t2;\"\tx\taccess:public\tline:2\tsignature:()\ttype:struct"
 
