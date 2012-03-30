@@ -8,11 +8,13 @@ import (
 	"strings"
 )
 
+// tagParser contains the data needed while parsing.
 type tagParser struct {
 	fset *token.FileSet
 	tags []Tag
 }
 
+// PrintTree prints the ast of the source in filename.
 func PrintTree(filename string) error {
 	fset := token.NewFileSet()
 	f, err := parser.ParseFile(fset, filename, nil, 0)
@@ -24,24 +26,16 @@ func PrintTree(filename string) error {
 	return nil
 }
 
+// Parse parses the source in filename and returns a list of tags.
 func Parse(filename string) ([]Tag, error) {
 	p := &tagParser{
 		fset: token.NewFileSet(),
 		tags: []Tag{},
 	}
 
-	err := p.parseFile(filename)
-	if err != nil {
-		return nil, err
-	}
-
-	return p.tags, nil
-}
-
-func (p *tagParser) parseFile(filename string) error {
 	f, err := parser.ParseFile(p.fset, filename, nil, 0)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// package
@@ -53,13 +47,15 @@ func (p *tagParser) parseFile(filename string) error {
 	// declarations
 	p.parseDeclarations(f)
 
-	return nil
+	return p.tags, nil
 }
 
+// parsePackage creates a package tag.
 func (p *tagParser) parsePackage(f *ast.File) {
 	p.tags = append(p.tags, p.createTag(f.Name.Name, f.Name.Pos(), "p"))
 }
 
+// parseImports creates an import tag for each import.
 func (p *tagParser) parseImports(f *ast.File) {
 	for _, im := range f.Imports {
 		name := strings.Trim(im.Path.Value, "\"")
@@ -67,6 +63,7 @@ func (p *tagParser) parseImports(f *ast.File) {
 	}
 }
 
+// parseDeclarations creates a tag for each function, type or value declaration.
 func (p *tagParser) parseDeclarations(f *ast.File) {
 	for _, d := range f.Decls {
 		switch decl := d.(type) {
@@ -85,6 +82,7 @@ func (p *tagParser) parseDeclarations(f *ast.File) {
 	}
 }
 
+// parseFunction creates a tag for function declaration f.
 func (p *tagParser) parseFunction(f *ast.FuncDecl) {
 	tag := p.createTag(f.Name.Name, f.Pos(), "f")
 
@@ -112,6 +110,8 @@ func (p *tagParser) parseFunction(f *ast.FuncDecl) {
 	p.tags = append(p.tags, tag)
 }
 
+// parseTypeDeclaration creates a tag for type declaration ts and for each
+// field in case of a struct, or each method in case of an interface.
 func (p *tagParser) parseTypeDeclaration(ts *ast.TypeSpec) {
 	tag := p.createTag(ts.Name.Name, ts.Pos(), "t")
 
@@ -132,6 +132,8 @@ func (p *tagParser) parseTypeDeclaration(ts *ast.TypeSpec) {
 	p.tags = append(p.tags, tag)
 }
 
+// parseValueDeclaration creates a tag for each variable or constant declaration,
+// unless the declaration uses a blank identifier.
 func (p *tagParser) parseValueDeclaration(v *ast.ValueSpec) {
 	for _, d := range v.Names {
 		if d.Name == "_" {
@@ -155,6 +157,8 @@ func (p *tagParser) parseValueDeclaration(v *ast.ValueSpec) {
 	}
 }
 
+// parseStructFields creates a tag for each field in struct s, using name as the
+// tags ctype.
 func (p *tagParser) parseStructFields(name string, s *ast.StructType) {
 	for _, f := range s.Fields.List {
 		var tag Tag
@@ -177,6 +181,8 @@ func (p *tagParser) parseStructFields(name string, s *ast.StructType) {
 	}
 }
 
+// parseInterfaceMethods creates a tag for each method in interface s, using name
+// as the tags ctype.
 func (p *tagParser) parseInterfaceMethods(name string, s *ast.InterfaceType) {
 	for _, f := range s.Methods.List {
 		var tag Tag
@@ -200,10 +206,13 @@ func (p *tagParser) parseInterfaceMethods(name string, s *ast.InterfaceType) {
 	}
 }
 
+// createTag creates a new tag, using pos to find the filename and set the line number.
 func (p *tagParser) createTag(name string, pos token.Pos, tagtype string) Tag {
 	return NewTag(name, p.fset.File(pos).Name(), p.fset.Position(pos).Line, tagtype)
 }
 
+// getTypes returns a comma separated list of types in fields. If includeNames is
+// true each type is preceded by a comma separated list of parameter names.
 func getTypes(fields *ast.FieldList, includeNames bool) string {
 	if fields == nil {
 		return ""
@@ -226,6 +235,8 @@ func getTypes(fields *ast.FieldList, includeNames bool) string {
 	return strings.Join(types, ", ")
 }
 
+// getType returns a string representation of the type of node. If star is true and the
+// type is a pointer, a * will be prepended to the string.
 func getType(node ast.Node, star bool) (paramType string) {
 	switch t := node.(type) {
 	case *ast.Ident:
@@ -261,6 +272,8 @@ func getType(node ast.Node, star bool) (paramType string) {
 	return
 }
 
+// getAccess returns the string "public" if name is considered an exported name, otherwise
+// the string "private" is returned.
 func getAccess(name string) (access string) {
 	if idx := strings.LastIndex(name, "."); idx > -1 && idx < len(name) {
 		name = name[idx+1:]

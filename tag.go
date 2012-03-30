@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// Tag represents a single tag.
 type Tag struct {
 	Name    string
 	File    string
@@ -16,6 +17,7 @@ type Tag struct {
 	Fields  map[string]string
 }
 
+// NewTag creates a new Tag.
 func NewTag(name, file string, line int, tagtype string) Tag {
 	l := strconv.Itoa(line)
 	return Tag{
@@ -27,6 +29,7 @@ func NewTag(name, file string, line int, tagtype string) Tag {
 	}
 }
 
+// The tags file format string representation of this tag.
 func (t Tag) String() string {
 	var b bytes.Buffer
 

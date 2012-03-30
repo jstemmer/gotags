@@ -18,9 +18,10 @@ const (
 var (
 	sortOutput bool
 	silent     bool
-	printTree  bool
+	printTree  bool // for debugging
 )
 
+// Initialize flags.
 func init() {
 	flag.BoolVar(&sortOutput, "sort", true, "sort tags")
 	flag.BoolVar(&silent, "silent", false, "do not produce any output on error")
@@ -72,6 +73,7 @@ func main() {
 	}
 }
 
+// createMetaTags returns a list of meta tags.
 func createMetaTags() []string {
 	var sorted int
 	if sortOutput {
