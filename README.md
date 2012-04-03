@@ -8,7 +8,7 @@ Installation
 
 Install gotags using the `go get` command:
 
-	go get github.com/jstemmer/go-tags
+	go get github.com/jstemmer/gotags
 
 Usage
 -----
