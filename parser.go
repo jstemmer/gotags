@@ -268,6 +268,8 @@ func getType(node ast.Node, star bool) (paramType string) {
 		paramType = fmt.Sprintf("map[%s]%s", getType(t.Key, true), getType(t.Value, true))
 	case *ast.ChanType:
 		paramType = fmt.Sprintf("chan %s", getType(t.Value, true))
+	case *ast.InterfaceType:
+		paramType = "interface{}"
 	}
 	return
 }
