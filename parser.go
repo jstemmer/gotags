@@ -97,14 +97,9 @@ func (p *tagParser) parseFunction(f *ast.FuncDecl) {
 	}
 
 	// check if this is a constructor, in that case it belongs to that type
-	if strings.HasPrefix(tag.Name, "New") && len(tag.Fields["type"]) > 0 {
-		if tag.Name[3:] == tag.Fields["type"] {
-			tag.Fields["ctype"] = tag.Fields["type"]
-			tag.Type = "r"
-		} else if tag.Fields["type"][0] == '*' && tag.Name[3:] == tag.Fields["type"][1:] {
-			tag.Fields["ctype"] = tag.Fields["type"][1:]
-			tag.Type = "r"
-		}
+	if strings.HasPrefix(tag.Name, "New") && containsType(tag.Name[3:], f.Type.Results) {
+		tag.Fields["ctype"] = tag.Name[3:]
+		tag.Type = "r"
 	}
 
 	p.tags = append(p.tags, tag)
@@ -233,6 +228,21 @@ func getTypes(fields *ast.FieldList, includeNames bool) string {
 	}
 
 	return strings.Join(types, ", ")
+}
+
+// containsType checks if t occurs in any of the types in fields
+func containsType(t string, fields *ast.FieldList) bool {
+	if len(t) == 0 || fields == nil {
+		return false
+	}
+
+	for _, param := range fields.List {
+		if getType(param.Type, false) == t {
+			return true
+		}
+	}
+
+	return false
 }
 
 // getType returns a string representation of the type of node. If star is true and the
