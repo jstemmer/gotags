@@ -6,9 +6,9 @@ gotags is a [ctags][]-compatible tag generator for [Go][].
 Installation
 ------------
 
-Install gotags using the `go get` command:
+Install or update gotags using the `go get` command:
 
-	go get github.com/jstemmer/gotags
+	go get -u github.com/jstemmer/gotags
 
 Usage
 -----
