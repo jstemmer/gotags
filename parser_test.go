@@ -54,6 +54,8 @@ var testCases = []struct {
 		tag("*io.Writer", 21, "e", F{"access": "public", "ctype": "TestEmbed", "type": "*io.Writer"}),
 		tag("TestEmbed", 19, "t", F{"access": "public", "type": "struct"}),
 		tag("NewTestEmbed", 24, "r", F{"access": "public", "ctype": "TestEmbed", "signature": "()", "type": "TestEmbed"}),
+		tag("Struct2", 27, "t", F{"access": "public", "type": "struct"}),
+		tag("NewStruct2", 30, "r", F{"access": "public", "ctype": "Struct2", "signature": "()", "type": "*Struct2, error"}),
 	}},
 	{filename: "tests/type.go", tags: []Tag{
 		tag("Test", 1, "p", F{}),

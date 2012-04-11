@@ -23,3 +23,9 @@ type TestEmbed struct {
 
 func NewTestEmbed() TestEmbed {
 }
+
+type Struct2 struct {
+}
+
+func NewStruct2() (*Struct2, error) {
+}
