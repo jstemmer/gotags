@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	VERSION      = "1.0.0"
+	VERSION      = "1.1.0"
 	NAME         = "gotags"
 	URL          = "https://github.com/jstemmer/gotags"
 	AUTHOR_NAME  = "Joel Stemmer"
