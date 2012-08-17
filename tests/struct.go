@@ -29,3 +29,15 @@ type Struct2 struct {
 
 func NewStruct2() (*Struct2, error) {
 }
+
+func Dial() (*Connection, error) {
+}
+
+type Connection struct {
+}
+
+func Dial2() (*Connection, *Struct2) {
+}
+
+func Dial3() (a, b *Connection) {
+}

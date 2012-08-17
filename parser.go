@@ -10,8 +10,9 @@ import (
 
 // tagParser contains the data needed while parsing.
 type tagParser struct {
-	fset *token.FileSet
-	tags []Tag
+	fset  *token.FileSet
+	tags  []Tag    // list of created tags
+	types []string // all types we encounter, used to determine the constructors
 }
 
 // PrintTree prints the ast of the source in filename.
@@ -29,8 +30,9 @@ func PrintTree(filename string) error {
 // Parse parses the source in filename and returns a list of tags.
 func Parse(filename string) ([]Tag, error) {
 	p := &tagParser{
-		fset: token.NewFileSet(),
-		tags: []Tag{},
+		fset:  token.NewFileSet(),
+		tags:  []Tag{},
+		types: make([]string, 0),
 	}
 
 	f, err := parser.ParseFile(p.fset, filename, nil, 0)
@@ -65,11 +67,10 @@ func (p *tagParser) parseImports(f *ast.File) {
 
 // parseDeclarations creates a tag for each function, type or value declaration.
 func (p *tagParser) parseDeclarations(f *ast.File) {
+	// first parse the type and value declarations, so that we have a list of all
+	// known types before parsing the functions.
 	for _, d := range f.Decls {
-		switch decl := d.(type) {
-		case *ast.FuncDecl:
-			p.parseFunction(decl)
-		case *ast.GenDecl:
+		if decl, ok := d.(*ast.GenDecl); ok {
 			for _, s := range decl.Specs {
 				switch ts := s.(type) {
 				case *ast.TypeSpec:
@@ -78,6 +79,13 @@ func (p *tagParser) parseDeclarations(f *ast.File) {
 					p.parseValueDeclaration(ts)
 				}
 			}
+		}
+	}
+
+	// now parse all the functions
+	for _, d := range f.Decls {
+		if decl, ok := d.(*ast.FuncDecl); ok {
+			p.parseFunction(decl)
 		}
 	}
 }
@@ -90,16 +98,15 @@ func (p *tagParser) parseFunction(f *ast.FuncDecl) {
 	tag.Fields[Signature] = fmt.Sprintf("(%s)", getTypes(f.Type.Params, true))
 	tag.Fields[TypeField] = getTypes(f.Type.Results, false)
 
-	// receiver
 	if f.Recv != nil && len(f.Recv.List) > 0 {
+		// this function has a receiver, set the type to Method
 		tag.Fields[ReceiverType] = getType(f.Recv.List[0].Type, false)
 		tag.Type = Method
-	}
-
-	// check if this is a constructor, in that case it belongs to that type
-	if strings.HasPrefix(tag.Name, "New") && containsType(tag.Name[3:], f.Type.Results) {
-		tag.Fields[ReceiverType] = tag.Name[3:]
-		tag.Type = Constructor
+	} else if name, ok := p.belongsToReceiver(f.Type.Results); ok {
+		// this function does not have a receiver, but it belongs to one based
+		// on its return values; its type will be Function instead of Method.
+		tag.Fields[ReceiverType] = name
+		tag.Type = Function
 	}
 
 	p.tags = append(p.tags, tag)
@@ -116,6 +123,7 @@ func (p *tagParser) parseTypeDeclaration(ts *ast.TypeSpec) {
 	case *ast.StructType:
 		tag.Fields[TypeField] = "struct"
 		p.parseStructFields(tag.Name, s)
+		p.types = append(p.types, tag.Name)
 	case *ast.InterfaceType:
 		tag.Fields[TypeField] = "interface"
 		tag.Type = Interface
@@ -206,6 +214,36 @@ func (p *tagParser) createTag(name string, pos token.Pos, tagType TagType) Tag {
 	return NewTag(name, p.fset.File(pos).Name(), p.fset.Position(pos).Line, tagType)
 }
 
+// belongsToReceiver checks if a function with these return types belongs to
+// a receiver. If it belongs to a receiver, the name of that receiver will be
+// returned with ok set to true. Otherwise ok will be false.
+// Behavior should be similar to how go doc decides when a function belongs to
+// a receiver (gosrc/pkg/go/doc/reader.go).
+func (p *tagParser) belongsToReceiver(types *ast.FieldList) (name string, ok bool) {
+	if types == nil || types.NumFields() == 0 {
+		return "", false
+	}
+
+	// If the first return type has more than 1 result associated with
+	// it, it should not belong to that receiver.
+	// Similar behavior as go doc (go source/.
+	if len(types.List[0].Names) > 1 {
+		return "", false
+	}
+
+	// get name of the first return type
+	t := getType(types.List[0].Type, false)
+
+	// check if it exists in the current list of known types
+	for _, knownType := range p.types {
+		if t == knownType {
+			return knownType, true
+		}
+	}
+
+	return "", false
+}
+
 // getTypes returns a comma separated list of types in fields. If includeNames is
 // true each type is preceded by a comma separated list of parameter names.
 func getTypes(fields *ast.FieldList, includeNames bool) string {
@@ -244,21 +282,6 @@ func getTypes(fields *ast.FieldList, includeNames bool) string {
 	}
 
 	return strings.Join(types, ", ")
-}
-
-// containsType checks if t occurs in any of the types in fields
-func containsType(t string, fields *ast.FieldList) bool {
-	if len(t) == 0 || fields == nil {
-		return false
-	}
-
-	for _, param := range fields.List {
-		if getType(param.Type, false) == t {
-			return true
-		}
-	}
-
-	return false
 }
 
 // getType returns a string representation of the type of node. If star is true and the
