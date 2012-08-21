@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-type F map[string]string
+type F map[TagField]string
 
 var testCases = []struct {
 	filename string

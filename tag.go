@@ -14,12 +14,25 @@ type Tag struct {
 	File    string
 	Address string
 	Type    TagType
-	Fields  map[string]string
+	Fields  map[TagField]string
 }
+
+type TagField string
+
+const (
+	// Tag fields
+	Access        TagField = "access"
+	Signature     TagField = "signature"
+	TypeField     TagField = "type"
+	ReceiverType  TagField = "ctype"
+	Line          TagField = "line"
+	InterfaceType TagField = "ntype"
+)
 
 type TagType string
 
 const (
+	// Tag types
 	Package     TagType = "p"
 	Import      TagType = "i"
 	Constant    TagType = "c"
@@ -41,7 +54,7 @@ func NewTag(name, file string, line int, tagType TagType) Tag {
 		File:    file,
 		Address: l,
 		Type:    tagType,
-		Fields:  map[string]string{"line": l},
+		Fields:  map[TagField]string{Line: l},
 	}
 }
 
