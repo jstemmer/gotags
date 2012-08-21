@@ -16,13 +16,15 @@ const (
 )
 
 var (
-	sortOutput bool
-	silent     bool
-	printTree  bool // for debugging
+	printVersion bool
+	sortOutput   bool
+	silent       bool
+	printTree    bool // for debugging
 )
 
 // Initialize flags.
 func init() {
+	flag.BoolVar(&printVersion, "v", false, "print version")
 	flag.BoolVar(&sortOutput, "sort", true, "sort tags")
 	flag.BoolVar(&silent, "silent", false, "do not produce any output on error")
 	flag.BoolVar(&printTree, "tree", false, "print syntax tree (debugging)")
@@ -36,6 +38,12 @@ func init() {
 
 func main() {
 	flag.Parse()
+
+	if printVersion {
+		fmt.Printf("gotags version %s\n", VERSION)
+		return
+	}
+
 	if flag.NArg() == 0 {
 		fmt.Fprintf(os.Stderr, "no file specified\n\n")
 		flag.Usage()
