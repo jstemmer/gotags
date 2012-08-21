@@ -215,15 +215,31 @@ func getTypes(fields *ast.FieldList, includeNames bool) string {
 
 	types := make([]string, len(fields.List))
 	for i, param := range fields.List {
-		types[i] = getType(param.Type, true)
+		if len(param.Names) > 0 {
+			// there are named parameters, there may be multiple names for a single type
+			t := getType(param.Type, true)
 
-		if includeNames && len(param.Names) > 0 {
-			// parameter names
-			names := make([]string, len(param.Names))
-			for j, n := range param.Names {
-				names[j] = n.Name
+			if includeNames {
+				// join all the names, followed by their type
+				names := make([]string, len(param.Names))
+				for j, n := range param.Names {
+					names[j] = n.Name
+				}
+				t = fmt.Sprintf("%s %s", strings.Join(names, ", "), t)
+			} else {
+				if len(param.Names) > 1 {
+					// repeat t len(param.Names) times
+					t = strings.Repeat(fmt.Sprintf("%s, ", t), len(param.Names))
+
+					// remove trailing comma and space
+					t = t[:len(t)-2]
+				}
 			}
-			types[i] = fmt.Sprintf("%s %s", strings.Join(names, ", "), types[i])
+
+			types[i] = t
+		} else {
+			// no named parameters
+			types[i] = getType(param.Type, true)
 		}
 	}
 

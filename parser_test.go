@@ -26,6 +26,7 @@ var testCases = []struct {
 		tag("function2", 6, "f", F{"access": "private", "signature": "(p1, p2 int, p3 *string)"}),
 		tag("function3", 9, "f", F{"access": "private", "signature": "()", "type": "bool"}),
 		tag("function4", 12, "f", F{"access": "private", "signature": "(p interface{})", "type": "interface{}"}),
+		tag("function5", 15, "f", F{"access": "private", "signature": "()", "type": "string, string, error"}),
 	}},
 	{filename: "tests/import.go", tags: []Tag{
 		tag("Test", 1, "p", F{}),

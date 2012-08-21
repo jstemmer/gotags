@@ -11,3 +11,6 @@ func function3() (result bool) {
 
 func function4(p interface{}) interface{} {
 }
+
+func function5() (a, b string, c error) {
+}
