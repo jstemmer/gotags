@@ -52,14 +52,14 @@ func Parse(filename string) ([]Tag, error) {
 
 // parsePackage creates a package tag.
 func (p *tagParser) parsePackage(f *ast.File) {
-	p.tags = append(p.tags, p.createTag(f.Name.Name, f.Name.Pos(), "p"))
+	p.tags = append(p.tags, p.createTag(f.Name.Name, f.Name.Pos(), Package))
 }
 
 // parseImports creates an import tag for each import.
 func (p *tagParser) parseImports(f *ast.File) {
 	for _, im := range f.Imports {
 		name := strings.Trim(im.Path.Value, "\"")
-		p.tags = append(p.tags, p.createTag(name, im.Path.Pos(), "i"))
+		p.tags = append(p.tags, p.createTag(name, im.Path.Pos(), Import))
 	}
 }
 
@@ -84,7 +84,7 @@ func (p *tagParser) parseDeclarations(f *ast.File) {
 
 // parseFunction creates a tag for function declaration f.
 func (p *tagParser) parseFunction(f *ast.FuncDecl) {
-	tag := p.createTag(f.Name.Name, f.Pos(), "f")
+	tag := p.createTag(f.Name.Name, f.Pos(), Function)
 
 	tag.Fields["access"] = getAccess(tag.Name)
 	tag.Fields["signature"] = fmt.Sprintf("(%s)", getTypes(f.Type.Params, true))
@@ -93,13 +93,13 @@ func (p *tagParser) parseFunction(f *ast.FuncDecl) {
 	// receiver
 	if f.Recv != nil && len(f.Recv.List) > 0 {
 		tag.Fields["ctype"] = getType(f.Recv.List[0].Type, false)
-		tag.Type = "m"
+		tag.Type = Method
 	}
 
 	// check if this is a constructor, in that case it belongs to that type
 	if strings.HasPrefix(tag.Name, "New") && containsType(tag.Name[3:], f.Type.Results) {
 		tag.Fields["ctype"] = tag.Name[3:]
-		tag.Type = "r"
+		tag.Type = Constructor
 	}
 
 	p.tags = append(p.tags, tag)
@@ -108,7 +108,7 @@ func (p *tagParser) parseFunction(f *ast.FuncDecl) {
 // parseTypeDeclaration creates a tag for type declaration ts and for each
 // field in case of a struct, or each method in case of an interface.
 func (p *tagParser) parseTypeDeclaration(ts *ast.TypeSpec) {
-	tag := p.createTag(ts.Name.Name, ts.Pos(), "t")
+	tag := p.createTag(ts.Name.Name, ts.Pos(), Type)
 
 	tag.Fields["access"] = getAccess(tag.Name)
 
@@ -118,7 +118,7 @@ func (p *tagParser) parseTypeDeclaration(ts *ast.TypeSpec) {
 		p.parseStructFields(tag.Name, s)
 	case *ast.InterfaceType:
 		tag.Fields["type"] = "interface"
-		tag.Type = "n"
+		tag.Type = Interface
 		p.parseInterfaceMethods(tag.Name, s)
 	default:
 		tag.Fields["type"] = getType(ts.Type, true)
@@ -135,7 +135,7 @@ func (p *tagParser) parseValueDeclaration(v *ast.ValueSpec) {
 			continue
 		}
 
-		tag := p.createTag(d.Name, d.Pos(), "v")
+		tag := p.createTag(d.Name, d.Pos(), Variable)
 		tag.Fields["access"] = getAccess(tag.Name)
 
 		if v.Type != nil {
@@ -144,9 +144,9 @@ func (p *tagParser) parseValueDeclaration(v *ast.ValueSpec) {
 
 		switch d.Obj.Kind {
 		case ast.Var:
-			tag.Type = "v"
+			tag.Type = Variable
 		case ast.Con:
-			tag.Type = "c"
+			tag.Type = Constant
 		}
 		p.tags = append(p.tags, tag)
 	}
@@ -159,7 +159,7 @@ func (p *tagParser) parseStructFields(name string, s *ast.StructType) {
 		var tag Tag
 		if len(f.Names) > 0 {
 			for _, n := range f.Names {
-				tag = p.createTag(n.Name, n.Pos(), "w")
+				tag = p.createTag(n.Name, n.Pos(), Field)
 				tag.Fields["access"] = getAccess(tag.Name)
 				tag.Fields["ctype"] = name
 				tag.Fields["type"] = getType(f.Type, true)
@@ -167,7 +167,7 @@ func (p *tagParser) parseStructFields(name string, s *ast.StructType) {
 			}
 		} else {
 			// embedded field
-			tag = p.createTag(getType(f.Type, true), f.Pos(), "e")
+			tag = p.createTag(getType(f.Type, true), f.Pos(), Embedded)
 			tag.Fields["access"] = getAccess(tag.Name)
 			tag.Fields["ctype"] = name
 			tag.Fields["type"] = getType(f.Type, true)
@@ -182,10 +182,10 @@ func (p *tagParser) parseInterfaceMethods(name string, s *ast.InterfaceType) {
 	for _, f := range s.Methods.List {
 		var tag Tag
 		if len(f.Names) > 0 {
-			tag = p.createTag(f.Names[0].Name, f.Names[0].Pos(), "m")
+			tag = p.createTag(f.Names[0].Name, f.Names[0].Pos(), Method)
 		} else {
 			// embedded interface
-			tag = p.createTag(getType(f.Type, true), f.Pos(), "e")
+			tag = p.createTag(getType(f.Type, true), f.Pos(), Embedded)
 		}
 
 		tag.Fields["access"] = getAccess(tag.Name)
@@ -202,8 +202,8 @@ func (p *tagParser) parseInterfaceMethods(name string, s *ast.InterfaceType) {
 }
 
 // createTag creates a new tag, using pos to find the filename and set the line number.
-func (p *tagParser) createTag(name string, pos token.Pos, tagtype string) Tag {
-	return NewTag(name, p.fset.File(pos).Name(), p.fset.Position(pos).Line, tagtype)
+func (p *tagParser) createTag(name string, pos token.Pos, tagType TagType) Tag {
+	return NewTag(name, p.fset.File(pos).Name(), p.fset.Position(pos).Line, tagType)
 }
 
 // getTypes returns a comma separated list of types in fields. If includeNames is

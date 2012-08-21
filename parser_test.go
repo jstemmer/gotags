@@ -102,7 +102,7 @@ func TestParse(t *testing.T) {
 	}
 }
 
-func tag(n string, l int, t string, fields F) (tag Tag) {
+func tag(n string, l int, t TagType, fields F) (tag Tag) {
 	tag = Tag{
 		Name:    n,
 		File:    "",

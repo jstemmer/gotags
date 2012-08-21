@@ -13,18 +13,34 @@ type Tag struct {
 	Name    string
 	File    string
 	Address string
-	Type    string
+	Type    TagType
 	Fields  map[string]string
 }
 
+type TagType string
+
+const (
+	Package     TagType = "p"
+	Import      TagType = "i"
+	Constant    TagType = "c"
+	Variable    TagType = "v"
+	Type        TagType = "t"
+	Interface   TagType = "n"
+	Field       TagType = "w"
+	Embedded    TagType = "e"
+	Method      TagType = "m"
+	Constructor TagType = "r"
+	Function    TagType = "f"
+)
+
 // NewTag creates a new Tag.
-func NewTag(name, file string, line int, tagtype string) Tag {
+func NewTag(name, file string, line int, tagType TagType) Tag {
 	l := strconv.Itoa(line)
 	return Tag{
 		Name:    name,
 		File:    file,
 		Address: l,
-		Type:    tagtype,
+		Type:    tagType,
 		Fields:  map[string]string{"line": l},
 	}
 }
@@ -39,7 +55,7 @@ func (t Tag) String() string {
 	b.WriteByte('\t')
 	b.WriteString(t.Address)
 	b.WriteString(";\"\t")
-	b.WriteString(t.Type)
+	b.WriteString(string(t.Type))
 	b.WriteByte('\t')
 
 	fields := make([]string, 0, len(t.Fields))
