@@ -11,7 +11,7 @@ var testCases = []struct {
 	filename string
 	tags     []Tag
 }{
-	{filename: "tests/const.go", tags: []Tag{
+	{filename: "tests/const.go-src", tags: []Tag{
 		tag("Test", 1, "p", F{}),
 		tag("Constant", 3, "c", F{"access": "public", "type": "string"}),
 		tag("OtherConst", 4, "c", F{"access": "public"}),
@@ -20,7 +20,7 @@ var testCases = []struct {
 		tag("C", 8, "c", F{"access": "public"}),
 		tag("D", 9, "c", F{"access": "public"}),
 	}},
-	{filename: "tests/func.go", tags: []Tag{
+	{filename: "tests/func.go-src", tags: []Tag{
 		tag("Test", 1, "p", F{}),
 		tag("Function1", 3, "f", F{"access": "public", "signature": "()", "type": "string"}),
 		tag("function2", 6, "f", F{"access": "private", "signature": "(p1, p2 int, p3 *string)"}),
@@ -28,20 +28,20 @@ var testCases = []struct {
 		tag("function4", 12, "f", F{"access": "private", "signature": "(p interface{})", "type": "interface{}"}),
 		tag("function5", 15, "f", F{"access": "private", "signature": "()", "type": "string, string, error"}),
 	}},
-	{filename: "tests/import.go", tags: []Tag{
+	{filename: "tests/import.go-src", tags: []Tag{
 		tag("Test", 1, "p", F{}),
 		tag("fmt", 3, "i", F{}),
 		tag("go/ast", 6, "i", F{}),
 		tag("go/parser", 7, "i", F{}),
 	}},
-	{filename: "tests/interface.go", tags: []Tag{
+	{filename: "tests/interface.go-src", tags: []Tag{
 		tag("Test", 1, "p", F{}),
 		tag("InterfaceMethod", 4, "m", F{"access": "public", "signature": "(int)", "ntype": "Interface", "type": "string"}),
 		tag("OtherMethod", 5, "m", F{"access": "public", "signature": "()", "ntype": "Interface"}),
 		tag("io.Reader", 6, "e", F{"access": "public", "ntype": "Interface"}),
 		tag("Interface", 3, "n", F{"access": "public", "type": "interface"}),
 	}},
-	{filename: "tests/struct.go", tags: []Tag{
+	{filename: "tests/struct.go-src", tags: []Tag{
 		tag("Test", 1, "p", F{}),
 		tag("Field1", 4, "w", F{"access": "public", "ctype": "Struct", "type": "int"}),
 		tag("Field2", 4, "w", F{"access": "public", "ctype": "Struct", "type": "int"}),
@@ -62,7 +62,7 @@ var testCases = []struct {
 		tag("Dial2", 39, "f", F{"access": "public", "ctype": "Connection", "signature": "()", "type": "*Connection, *Struct2"}),
 		tag("Dial3", 42, "f", F{"access": "public", "signature": "()", "type": "*Connection, *Connection"}),
 	}},
-	{filename: "tests/type.go", tags: []Tag{
+	{filename: "tests/type.go-src", tags: []Tag{
 		tag("Test", 1, "p", F{}),
 		tag("testType", 3, "t", F{"access": "private", "type": "int"}),
 		tag("testArrayType", 4, "t", F{"access": "private", "type": "[4]int"}),
@@ -73,7 +73,7 @@ var testCases = []struct {
 		tag("testMapType", 9, "t", F{"access": "private", "type": "map[string]bool"}),
 		tag("testChanType", 10, "t", F{"access": "private", "type": "chan bool"}),
 	}},
-	{filename: "tests/var.go", tags: []Tag{
+	{filename: "tests/var.go-src", tags: []Tag{
 		tag("Test", 1, "p", F{}),
 		tag("variable1", 3, "v", F{"access": "private", "type": "int"}),
 		tag("variable2", 4, "v", F{"access": "private", "type": "string"}),
