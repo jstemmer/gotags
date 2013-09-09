@@ -15,18 +15,6 @@ type tagParser struct {
 	types []string // all types we encounter, used to determine the constructors
 }
 
-// PrintTree prints the ast of the source in filename.
-func PrintTree(filename string) error {
-	fset := token.NewFileSet()
-	f, err := parser.ParseFile(fset, filename, nil, 0)
-	if err != nil {
-		return err
-	}
-
-	ast.Print(fset, f)
-	return nil
-}
-
 // Parse parses the source in filename and returns a list of tags.
 func Parse(filename string) ([]Tag, error) {
 	p := &tagParser{

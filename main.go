@@ -25,7 +25,6 @@ var (
 	recurse      bool
 	sortOutput   bool
 	silent       bool
-	printTree    bool // for debugging
 )
 
 // Initialize flags.
@@ -35,7 +34,6 @@ func init() {
 	flag.BoolVar(&recurse, "R", false, "recurse into directories in the file list")
 	flag.BoolVar(&sortOutput, "sort", true, "sort tags")
 	flag.BoolVar(&silent, "silent", false, "do not produce any output on error")
-	flag.BoolVar(&printTree, "tree", false, "print syntax tree (debugging)")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "gotags version %s\n\n", Version)
@@ -140,11 +138,6 @@ func main() {
 		fmt.Fprintf(os.Stderr, "no file specified\n\n")
 		flag.Usage()
 		os.Exit(1)
-	}
-
-	if printTree {
-		PrintTree(flag.Arg(0))
-		return
 	}
 
 	tags := []Tag{}
