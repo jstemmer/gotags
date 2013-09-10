@@ -1,24 +1,27 @@
-gotags
-======
+# gotags
 
 gotags is a [ctags][]-compatible tag generator for [Go][].
 
 [![Build Status](https://secure.travis-ci.org/jstemmer/gotags.png?branch=master)](http://travis-ci.org/jstemmer/gotags)
 
-Installation
-------------
+## Installation
 
-Install or update gotags using the `go get` command:
+[Go][] version 1.1 or higher is required. Install or update gotags using the
+`go get` command:
 
 	go get -u github.com/jstemmer/gotags
 
-Usage
------
+## Usage
 
 	gotags [options] file(s)
 
-Vim [Tagbar][] configuration
-----------------------------
+	-L="": source file names are read from the specified file.
+	-silent=false: do not produce any output on error
+	-sort=true: sort tags
+	-tree=false: print syntax tree (debugging)
+	-v=false: print version
+
+## Vim [Tagbar][] configuration
 
 Put the following configuration in your vimrc:
 
