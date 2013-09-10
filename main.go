@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"os"
@@ -17,6 +18,7 @@ const (
 
 var (
 	printVersion bool
+	inputFile    string
 	sortOutput   bool
 	silent       bool
 	printTree    bool // for debugging
@@ -25,6 +27,7 @@ var (
 // Initialize flags.
 func init() {
 	flag.BoolVar(&printVersion, "v", false, "print version")
+	flag.StringVar(&inputFile, "L", "", "source file names are read from the specified file.")
 	flag.BoolVar(&sortOutput, "sort", true, "sort tags")
 	flag.BoolVar(&silent, "silent", false, "do not produce any output on error")
 	flag.BoolVar(&printTree, "tree", false, "print syntax tree (debugging)")
@@ -36,6 +39,30 @@ func init() {
 	}
 }
 
+func getFileNames() ([]string, error) {
+	var names []string
+
+	names = append(names, flag.Args()...)
+
+	if len(inputFile) == 0 {
+		return names, nil
+	}
+
+	in, err := os.Open(inputFile)
+	if err != nil {
+		return nil, err
+	}
+
+	defer in.Close()
+
+	scanner := bufio.NewScanner(in)
+	for scanner.Scan() {
+		names = append(names, scanner.Text())
+	}
+
+	return names, nil
+}
+
 func main() {
 	flag.Parse()
 
@@ -44,7 +71,14 @@ func main() {
 		return
 	}
 
-	if flag.NArg() == 0 {
+	files, err := getFileNames()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "cannot get specified files\n\n")
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	if len(files) == 0 {
 		fmt.Fprintf(os.Stderr, "no file specified\n\n")
 		flag.Usage()
 		os.Exit(1)
@@ -56,7 +90,7 @@ func main() {
 	}
 
 	tags := []Tag{}
-	for _, file := range flag.Args() {
+	for _, file := range files {
 		ts, err := Parse(file)
 		if err != nil {
 			if !silent {
