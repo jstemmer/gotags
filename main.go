@@ -21,6 +21,7 @@ var (
 	inputFile    string
 	sortOutput   bool
 	silent       bool
+	langField    bool
 	printTree    bool // for debugging
 )
 
@@ -29,6 +30,7 @@ func init() {
 	flag.BoolVar(&printVersion, "v", false, "print version")
 	flag.StringVar(&inputFile, "L", "", "source file names are read from the specified file.")
 	flag.BoolVar(&sortOutput, "sort", true, "sort tags")
+	flag.BoolVar(&langField, "lfield", true, "Add the language field to every tag as ctags --fields=+l does.")
 	flag.BoolVar(&silent, "silent", false, "do not produce any output on error")
 	flag.BoolVar(&printTree, "tree", false, "print syntax tree (debugging)")
 
@@ -101,6 +103,11 @@ func main() {
 		tags = append(tags, ts...)
 	}
 
+	if langField {
+		for _, tag := range tags {
+			tag.Fields["language"] = "go"
+		}
+	}
 	output := createMetaTags()
 	for _, tag := range tags {
 		output = append(output, tag.String())
