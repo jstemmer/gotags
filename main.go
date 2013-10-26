@@ -48,16 +48,24 @@ func getFileNames() ([]string, error) {
 		return names, nil
 	}
 
-	in, err := os.Open(inputFile)
-	if err != nil {
-		return nil, err
+	var scanner *bufio.Scanner
+	if inputFile != "-" {
+		in, err := os.Open(inputFile)
+		if err != nil {
+			return nil, err
+		}
+
+		defer in.Close()
+		scanner = bufio.NewScanner(in)
+	} else {
+		scanner = bufio.NewScanner(os.Stdin)
 	}
 
-	defer in.Close()
-
-	scanner := bufio.NewScanner(in)
 	for scanner.Scan() {
 		names = append(names, scanner.Text())
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, err
 	}
 
 	return names, nil
