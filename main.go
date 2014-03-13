@@ -86,7 +86,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if len(files) == 0 {
+	if len(files) == 0 && len(inputFile) == 0 {
 		fmt.Fprintf(os.Stderr, "no file specified\n\n")
 		flag.Usage()
 		os.Exit(1)
