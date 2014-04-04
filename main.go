@@ -5,7 +5,9 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
+	"strings"
 )
 
 const (
@@ -19,6 +21,7 @@ const (
 var (
 	printVersion bool
 	inputFile    string
+	recurse      bool
 	sortOutput   bool
 	silent       bool
 	printTree    bool // for debugging
@@ -28,6 +31,7 @@ var (
 func init() {
 	flag.BoolVar(&printVersion, "v", false, "print version")
 	flag.StringVar(&inputFile, "L", "", "source file names are read from the specified file.")
+	flag.BoolVar(&recurse, "R", false, "recurse into directories in the file list")
 	flag.BoolVar(&sortOutput, "sort", true, "sort tags")
 	flag.BoolVar(&silent, "silent", false, "do not produce any output on error")
 	flag.BoolVar(&printTree, "tree", false, "print syntax tree (debugging)")
@@ -39,11 +43,37 @@ func init() {
 	}
 }
 
-func getFileNames() ([]string, error) {
-	var names []string
+func walkDir(names []string, dir string) ([]string, error) {
+	e := filepath.Walk(dir, func(path string, _ os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if strings.HasSuffix(path, ".go") {
+			names = append(names, path)
+		}
+		return nil
+	})
 
-	names = append(names, flag.Args()...)
+	return names, e
+}
 
+func recurseNames(names []string) ([]string, error) {
+	var ret []string
+	for _, name := range names {
+		info, e := os.Stat(name)
+		if e != nil || info == nil || !info.IsDir() {
+			ret = append(ret, name) // defer the error handling to the scanner
+		} else {
+			ret, e = walkDir(ret, name)
+			if e != nil {
+				return names, e
+			}
+		}
+	}
+	return ret, nil
+}
+
+func readNames(names []string) ([]string, error) {
 	if len(inputFile) == 0 {
 		return names, nil
 	}
@@ -66,6 +96,25 @@ func getFileNames() ([]string, error) {
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, err
+	}
+
+	return names, nil
+}
+
+func getFileNames() ([]string, error) {
+	var names []string
+
+	names = append(names, flag.Args()...)
+	names, err := readNames(names)
+	if err != nil {
+		return nil, err
+	}
+
+	if recurse {
+		names, err = recurseNames(names)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return names, nil
