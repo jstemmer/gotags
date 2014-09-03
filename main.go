@@ -179,11 +179,11 @@ func createMetaTags() []string {
 		sorted = 1
 	}
 	return []string{
-		"!_TAG_FILE_FORMAT\t2\t",
+		"!_TAG_FILE_FORMAT\t2",
 		fmt.Sprintf("!_TAG_FILE_SORTED\t%d\t/0=unsorted, 1=sorted/", sorted),
 		fmt.Sprintf("!_TAG_PROGRAM_AUTHOR\t%s\t/%s/", AUTHOR_NAME, AUTHOR_EMAIL),
-		fmt.Sprintf("!_TAG_PROGRAM_NAME\t%s\t", NAME),
-		fmt.Sprintf("!_TAG_PROGRAM_URL\t%s\t", URL),
-		fmt.Sprintf("!_TAG_PROGRAM_VERSION\t%s\t", VERSION),
+		fmt.Sprintf("!_TAG_PROGRAM_NAME\t%s", NAME),
+		fmt.Sprintf("!_TAG_PROGRAM_URL\t%s", URL),
+		fmt.Sprintf("!_TAG_PROGRAM_VERSION\t%s", VERSION),
 	}
 }
