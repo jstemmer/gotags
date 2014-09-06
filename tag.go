@@ -17,10 +17,11 @@ type Tag struct {
 	Fields  map[TagField]string
 }
 
+// TagField represents a single field in a tag line.
 type TagField string
 
+// Tag fields.
 const (
-	// Tag fields
 	Access        TagField = "access"
 	Signature     TagField = "signature"
 	TypeField     TagField = "type"
@@ -29,10 +30,11 @@ const (
 	InterfaceType TagField = "ntype"
 )
 
+// TagType represents the type of a tag in a tag line.
 type TagType string
 
+// Tag types.
 const (
-	// Tag types
 	Package     TagType = "p"
 	Import      TagType = "i"
 	Constant    TagType = "c"

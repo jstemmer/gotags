@@ -10,12 +10,13 @@ import (
 	"strings"
 )
 
+// Contants used for the meta tags
 const (
-	VERSION      = "1.2.0"
-	NAME         = "gotags"
-	URL          = "https://github.com/jstemmer/gotags"
-	AUTHOR_NAME  = "Joel Stemmer"
-	AUTHOR_EMAIL = "stemmertech@gmail.com"
+	Version     = "1.2.0"
+	Name        = "gotags"
+	URL         = "https://github.com/jstemmer/gotags"
+	AuthorName  = "Joel Stemmer"
+	AuthorEmail = "stemmertech@gmail.com"
 )
 
 var (
@@ -37,7 +38,7 @@ func init() {
 	flag.BoolVar(&printTree, "tree", false, "print syntax tree (debugging)")
 
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "gotags version %s\n\n", VERSION)
+		fmt.Fprintf(os.Stderr, "gotags version %s\n\n", Version)
 		fmt.Fprintf(os.Stderr, "Usage: %s [options] file(s)\n\n", os.Args[0])
 		flag.PrintDefaults()
 	}
@@ -124,7 +125,7 @@ func main() {
 	flag.Parse()
 
 	if printVersion {
-		fmt.Printf("gotags version %s\n", VERSION)
+		fmt.Printf("gotags version %s\n", Version)
 		return
 	}
 
@@ -181,9 +182,9 @@ func createMetaTags() []string {
 	return []string{
 		"!_TAG_FILE_FORMAT\t2",
 		fmt.Sprintf("!_TAG_FILE_SORTED\t%d\t/0=unsorted, 1=sorted/", sorted),
-		fmt.Sprintf("!_TAG_PROGRAM_AUTHOR\t%s\t/%s/", AUTHOR_NAME, AUTHOR_EMAIL),
-		fmt.Sprintf("!_TAG_PROGRAM_NAME\t%s", NAME),
+		fmt.Sprintf("!_TAG_PROGRAM_AUTHOR\t%s\t/%s/", AuthorName, AuthorEmail),
+		fmt.Sprintf("!_TAG_PROGRAM_NAME\t%s", Name),
 		fmt.Sprintf("!_TAG_PROGRAM_URL\t%s", URL),
-		fmt.Sprintf("!_TAG_PROGRAM_VERSION\t%s", VERSION),
+		fmt.Sprintf("!_TAG_PROGRAM_VERSION\t%s", Version),
 	}
 }
