@@ -2,7 +2,7 @@
 
 gotags is a [ctags][]-compatible tag generator for [Go][].
 
-[![Build Status](https://secure.travis-ci.org/jstemmer/gotags.png?branch=master)](http://travis-ci.org/jstemmer/gotags)
+[![Build Status](https://travis-ci.org/jstemmer/gotags.svg?branch=master)](http://travis-ci.org/jstemmer/gotags)
 
 ## Installation
 
