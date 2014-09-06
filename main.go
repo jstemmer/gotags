@@ -12,7 +12,7 @@ import (
 
 // Contants used for the meta tags
 const (
-	Version     = "1.2.0"
+	Version     = "1.3.0"
 	Name        = "gotags"
 	URL         = "https://github.com/jstemmer/gotags"
 	AuthorName  = "Joel Stemmer"
