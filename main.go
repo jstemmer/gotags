@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"sort"
@@ -22,6 +23,7 @@ const (
 var (
 	printVersion bool
 	inputFile    string
+	outputFile   string
 	recurse      bool
 	sortOutput   bool
 	silent       bool
@@ -31,6 +33,7 @@ var (
 func init() {
 	flag.BoolVar(&printVersion, "v", false, "print version.")
 	flag.StringVar(&inputFile, "L", "", "source file names are read from the specified file.")
+	flag.StringVar(&outputFile, "f", "", `write output to specified file. If file is "-", output is written to standard out.`)
 	flag.BoolVar(&recurse, "R", false, "recurse into directories in the file list.")
 	flag.BoolVar(&sortOutput, "sort", true, "sort tags.")
 	flag.BoolVar(&silent, "silent", false, "do not produce any output on error.")
@@ -161,8 +164,23 @@ func main() {
 		sort.Sort(sort.StringSlice(output))
 	}
 
+	var out io.Writer
+	if len(outputFile) == 0 || outputFile == "-" {
+		// For compatibility with older gotags versions, also write to stdout
+		// when outputFile is not specified.
+		out = os.Stdout
+	} else {
+		file, err := os.Create(outputFile)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "could not create output file: %s\n", err)
+			os.Exit(1)
+		}
+		out = file
+		defer file.Close()
+	}
+
 	for _, s := range output {
-		fmt.Println(s)
+		fmt.Fprintln(out, s)
 	}
 }
 
