@@ -208,8 +208,9 @@ func (p *tagParser) parseInterfaceMethods(name string, s *ast.InterfaceType) {
 func (p *tagParser) createTag(name string, pos token.Pos, tagType TagType) Tag {
 	f := p.fset.File(pos).Name()
 	if p.relative {
-		if rel, err := filepath.Rel(p.basepath, f); err != nil {
-			// log error, but continue
+		if abs, err := filepath.Abs(f); err != nil {
+			fmt.Fprintf(os.Stderr, "could not determine absolute path: %s\n", err)
+		} else if rel, err := filepath.Rel(p.basepath, abs); err != nil {
 			fmt.Fprintf(os.Stderr, "could not determine relative path: %s\n", err)
 		} else {
 			f = rel

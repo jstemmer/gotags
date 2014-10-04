@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -146,9 +145,20 @@ func main() {
 		os.Exit(1)
 	}
 
+	var basedir string
+	if relative {
+		basedir, err = filepath.Abs(filepath.Dir(outputFile))
+		if err != nil {
+			if !silent {
+				fmt.Fprintf(os.Stderr, "could not determine absolute path: %s\n", err)
+			}
+			os.Exit(1)
+		}
+	}
+
 	tags := []Tag{}
 	for _, file := range files {
-		ts, err := Parse(file, relative, path.Dir(outputFile))
+		ts, err := Parse(file, relative, basedir)
 		if err != nil {
 			if !silent {
 				fmt.Fprintf(os.Stderr, "parse error: %s\n\n", err)

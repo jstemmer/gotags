@@ -1,6 +1,7 @@
 package main
 
 import (
+	"path/filepath"
 	"strconv"
 	"testing"
 )
@@ -91,7 +92,13 @@ var testCases = []struct {
 
 func TestParse(t *testing.T) {
 	for _, testCase := range testCases {
-		tags, err := Parse(testCase.filename, testCase.relative, testCase.basepath)
+		basepath, err := filepath.Abs(testCase.basepath)
+		if err != nil {
+			t.Errorf("[%s] could not determine base path: %s\n", testCase.filename, err)
+			continue
+		}
+
+		tags, err := Parse(testCase.filename, testCase.relative, basepath)
 		if err != nil {
 			t.Errorf("[%s] Parse error: %s", testCase.filename, err)
 			continue
