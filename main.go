@@ -29,11 +29,11 @@ var (
 
 // Initialize flags.
 func init() {
-	flag.BoolVar(&printVersion, "v", false, "print version")
+	flag.BoolVar(&printVersion, "v", false, "print version.")
 	flag.StringVar(&inputFile, "L", "", "source file names are read from the specified file.")
-	flag.BoolVar(&recurse, "R", false, "recurse into directories in the file list")
-	flag.BoolVar(&sortOutput, "sort", true, "sort tags")
-	flag.BoolVar(&silent, "silent", false, "do not produce any output on error")
+	flag.BoolVar(&recurse, "R", false, "recurse into directories in the file list.")
+	flag.BoolVar(&sortOutput, "sort", true, "sort tags.")
+	flag.BoolVar(&silent, "silent", false, "do not produce any output on error.")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "gotags version %s\n\n", Version)

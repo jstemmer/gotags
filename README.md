@@ -16,11 +16,10 @@ gotags is a [ctags][]-compatible tag generator for [Go][].
 	gotags [options] file(s)
 
 	-L="": source file names are read from the specified file.
-	-R=false: recurse into directories in the file list
-	-silent=false: do not produce any output on error
-	-sort=true: sort tags
-	-tree=false: print syntax tree (debugging)
-	-v=false: print version
+	-R=false: recurse into directories in the file list.
+	-silent=false: do not produce any output on error.
+	-sort=true: sort tags.
+	-v=false: print version.
 
 ## Vim [Tagbar][] configuration
 
@@ -54,7 +53,7 @@ Put the following configuration in your vimrc:
 		\ 'ctagsargs' : '-sort -silent'
 	\ }
 
-### Screenshot
+### Vim+Tagbar Screenshot
 ![vim Tagbar gotags](http://stemmertech.com/images/gotags-1.0.0-screenshot.png)
 
 [ctags]: http://ctags.sourceforge.net
