@@ -9,6 +9,8 @@ type F map[TagField]string
 
 var testCases = []struct {
 	filename string
+	relative bool
+	basepath string
 	tags     []Tag
 }{
 	{filename: "tests/const.go-src", tags: []Tag{
@@ -82,11 +84,14 @@ var testCases = []struct {
 		tag("C", 8, "v", F{"access": "public"}),
 		tag("D", 9, "v", F{"access": "public"}),
 	}},
+	{filename: "tests/simple.go-src", relative: true, basepath: "dir", tags: []Tag{
+		Tag{Name: "main", File: "../tests/simple.go-src", Address: "1", Type: "p", Fields: F{"line": "1"}},
+	}},
 }
 
 func TestParse(t *testing.T) {
 	for _, testCase := range testCases {
-		tags, err := Parse(testCase.filename)
+		tags, err := Parse(testCase.filename, testCase.relative, testCase.basepath)
 		if err != nil {
 			t.Errorf("[%s] Parse error: %s", testCase.filename, err)
 			continue
@@ -98,7 +103,9 @@ func TestParse(t *testing.T) {
 		}
 
 		for i, tag := range testCase.tags {
-			tag.File = testCase.filename
+			if len(tag.File) == 0 {
+				tag.File = testCase.filename
+			}
 			if tags[i].String() != tag.String() {
 				t.Errorf("[%s] tag(%d)\n  is:%s\nwant:%s", testCase.filename, i, tags[i].String(), tag.String())
 			}

@@ -20,6 +20,7 @@ gotags is a [ctags][]-compatible tag generator for [Go][].
 	-f="": write output to specified file. If file is "-", output is written to standard out.
 	-silent=false: do not produce any output on error.
 	-sort=true: sort tags.
+	-tag-relative=false: file paths should be relative to the directory containing the tag file.
 	-v=false: print version.
 
 ## Vim [Tagbar][] configuration

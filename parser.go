@@ -5,22 +5,29 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
 // tagParser contains the data needed while parsing.
 type tagParser struct {
-	fset  *token.FileSet
-	tags  []Tag    // list of created tags
-	types []string // all types we encounter, used to determine the constructors
+	fset     *token.FileSet
+	tags     []Tag    // list of created tags
+	types    []string // all types we encounter, used to determine the constructors
+	relative bool     // should filenames be relative to basepath
+	basepath string   // output file directory
 }
 
-// Parse parses the source in filename and returns a list of tags.
-func Parse(filename string) ([]Tag, error) {
+// Parse parses the source in filename and returns a list of tags. If relative
+// is true, the filenames in the list of tags are relative to basepath.
+func Parse(filename string, relative bool, basepath string) ([]Tag, error) {
 	p := &tagParser{
-		fset:  token.NewFileSet(),
-		tags:  []Tag{},
-		types: make([]string, 0),
+		fset:     token.NewFileSet(),
+		tags:     []Tag{},
+		types:    make([]string, 0),
+		relative: relative,
+		basepath: basepath,
 	}
 
 	f, err := parser.ParseFile(p.fset, filename, nil, 0)
@@ -199,7 +206,16 @@ func (p *tagParser) parseInterfaceMethods(name string, s *ast.InterfaceType) {
 
 // createTag creates a new tag, using pos to find the filename and set the line number.
 func (p *tagParser) createTag(name string, pos token.Pos, tagType TagType) Tag {
-	return NewTag(name, p.fset.File(pos).Name(), p.fset.Position(pos).Line, tagType)
+	f := p.fset.File(pos).Name()
+	if p.relative {
+		if rel, err := filepath.Rel(p.basepath, f); err != nil {
+			// log error, but continue
+			fmt.Fprintf(os.Stderr, "could not determine relative path: %s\n", err)
+		} else {
+			f = rel
+		}
+	}
+	return NewTag(name, f, p.fset.Position(pos).Line, tagType)
 }
 
 // belongsToReceiver checks if a function with these return types belongs to

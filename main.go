@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -27,6 +28,7 @@ var (
 	recurse      bool
 	sortOutput   bool
 	silent       bool
+	relative     bool
 )
 
 // Initialize flags.
@@ -37,6 +39,7 @@ func init() {
 	flag.BoolVar(&recurse, "R", false, "recurse into directories in the file list.")
 	flag.BoolVar(&sortOutput, "sort", true, "sort tags.")
 	flag.BoolVar(&silent, "silent", false, "do not produce any output on error.")
+	flag.BoolVar(&relative, "tag-relative", false, "file paths should be relative to the directory containing the tag file.")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "gotags version %s\n\n", Version)
@@ -145,7 +148,7 @@ func main() {
 
 	tags := []Tag{}
 	for _, file := range files {
-		ts, err := Parse(file)
+		ts, err := Parse(file, relative, path.Dir(outputFile))
 		if err != nil {
 			if !silent {
 				fmt.Fprintf(os.Stderr, "parse error: %s\n\n", err)
