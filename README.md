@@ -15,7 +15,7 @@ gotags is a [ctags][]-compatible tag generator for [Go][].
 
 	gotags [options] file(s)
 
-	-L="": source file names are read from the specified file.
+	-L="": source file names are read from the specified file. If file is "-", input is read from standard in.
 	-R=false: recurse into directories in the file list.
 	-f="": write output to specified file. If file is "-", output is written to standard out.
 	-silent=false: do not produce any output on error.

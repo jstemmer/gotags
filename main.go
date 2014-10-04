@@ -32,7 +32,7 @@ var (
 // Initialize flags.
 func init() {
 	flag.BoolVar(&printVersion, "v", false, "print version.")
-	flag.StringVar(&inputFile, "L", "", "source file names are read from the specified file.")
+	flag.StringVar(&inputFile, "L", "", `source file names are read from the specified file. If file is "-", input is read from standard in.`)
 	flag.StringVar(&outputFile, "f", "", `write output to specified file. If file is "-", output is written to standard out.`)
 	flag.BoolVar(&recurse, "R", false, "recurse into directories in the file list.")
 	flag.BoolVar(&sortOutput, "sort", true, "sort tags.")
