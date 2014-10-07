@@ -58,6 +58,12 @@ Put the following configuration in your vimrc:
 ### Vim+Tagbar Screenshot
 ![vim Tagbar gotags](http://stemmertech.com/images/gotags-1.0.0-screenshot.png)
 
+## gotags with Emacs
+
+Gotags doesn't have support for generating etags yet, but
+[gotags-el](https://github.com/craig-ludington/gotags-el) allows you to use
+gotags directly in Emacs.
+
 [ctags]: http://ctags.sourceforge.net
 [go]: http://golang.org
 [tagbar]: http://majutsushi.github.com/tagbar/
