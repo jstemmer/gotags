@@ -48,11 +48,11 @@ func init() {
 }
 
 func walkDir(names []string, dir string) ([]string, error) {
-	e := filepath.Walk(dir, func(path string, _ os.FileInfo, err error) error {
+	e := filepath.Walk(dir, func(path string, finfo os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		if strings.HasSuffix(path, ".go") {
+		if strings.HasSuffix(path, ".go") && !finfo.IsDir() {
 			names = append(names, path)
 		}
 		return nil
