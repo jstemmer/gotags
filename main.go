@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 )
@@ -209,6 +210,6 @@ func createMetaTags() []string {
 		fmt.Sprintf("!_TAG_PROGRAM_AUTHOR\t%s\t/%s/", AuthorName, AuthorEmail),
 		fmt.Sprintf("!_TAG_PROGRAM_NAME\t%s", Name),
 		fmt.Sprintf("!_TAG_PROGRAM_URL\t%s", URL),
-		fmt.Sprintf("!_TAG_PROGRAM_VERSION\t%s", Version),
+		fmt.Sprintf("!_TAG_PROGRAM_VERSION\t%s\t/%s/", Version, runtime.Version()),
 	}
 }
