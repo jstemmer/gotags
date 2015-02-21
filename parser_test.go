@@ -2,6 +2,7 @@ package main
 
 import (
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"testing"
 )
@@ -9,10 +10,11 @@ import (
 type F map[TagField]string
 
 var testCases = []struct {
-	filename string
-	relative bool
-	basepath string
-	tags     []Tag
+	filename   string
+	relative   bool
+	basepath   string
+	minversion string
+	tags       []Tag
 }{
 	{filename: "tests/const.go-src", tags: []Tag{
 		tag("Test", 1, "p", F{}),
@@ -88,10 +90,20 @@ var testCases = []struct {
 	{filename: "tests/simple.go-src", relative: true, basepath: "dir", tags: []Tag{
 		Tag{Name: "main", File: "../tests/simple.go-src", Address: "1", Type: "p", Fields: F{"line": "1"}},
 	}},
+	{filename: "tests/range.go-src", minversion: "go1.4", tags: []Tag{
+		tag("main", 1, "p", F{}),
+		tag("fmt", 3, "i", F{}),
+		tag("main", 5, "f", F{"access": "private", "signature": "()"}),
+	}},
 }
 
 func TestParse(t *testing.T) {
 	for _, testCase := range testCases {
+		if testCase.minversion != "" && runtime.Version() < testCase.minversion {
+			t.Skipf("[%s] skipping test. Version is %s, but test requires %s", testCase.filename, runtime.Version(), testCase.minversion)
+			continue
+		}
+
 		basepath, err := filepath.Abs(testCase.basepath)
 		if err != nil {
 			t.Errorf("[%s] could not determine base path: %s\n", testCase.filename, err)
