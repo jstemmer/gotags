@@ -33,22 +33,25 @@ var (
 	fields       string
 )
 
+// ignore unknown flags
+var flags = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
+
 // Initialize flags.
 func init() {
-	flag.BoolVar(&printVersion, "v", false, "print version.")
-	flag.StringVar(&inputFile, "L", "", `source file names are read from the specified file. If file is "-", input is read from standard in.`)
-	flag.StringVar(&outputFile, "f", "", `write output to specified file. If file is "-", output is written to standard out.`)
-	flag.BoolVar(&recurse, "R", false, "recurse into directories in the file list.")
-	flag.BoolVar(&sortOutput, "sort", true, "sort tags.")
-	flag.BoolVar(&silent, "silent", false, "do not produce any output on error.")
-	flag.BoolVar(&relative, "tag-relative", false, "file paths should be relative to the directory containing the tag file.")
-	flag.BoolVar(&listLangs, "list-languages", false, "list supported languages.")
-	flag.StringVar(&fields, "fields", "", "include selected extension fields (only +l).")
+	flags.BoolVar(&printVersion, "v", false, "print version.")
+	flags.StringVar(&inputFile, "L", "", `source file names are read from the specified file. If file is "-", input is read from standard in.`)
+	flags.StringVar(&outputFile, "f", "", `write output to specified file. If file is "-", output is written to standard out.`)
+	flags.BoolVar(&recurse, "R", false, "recurse into directories in the file list.")
+	flags.BoolVar(&sortOutput, "sort", true, "sort tags.")
+	flags.BoolVar(&silent, "silent", false, "do not produce any output on error.")
+	flags.BoolVar(&relative, "tag-relative", false, "file paths should be relative to the directory containing the tag file.")
+	flags.BoolVar(&listLangs, "list-languages", false, "list supported languages.")
+	flags.StringVar(&fields, "fields", "", "include selected extension fields (only +l).")
 
-	flag.Usage = func() {
+	flags.Usage = func() {
 		fmt.Fprintf(os.Stderr, "gotags version %s\n\n", Version)
 		fmt.Fprintf(os.Stderr, "Usage: %s [options] file(s)\n\n", os.Args[0])
-		flag.PrintDefaults()
+		flags.PrintDefaults()
 	}
 }
 
@@ -113,7 +116,7 @@ func readNames(names []string) ([]string, error) {
 func getFileNames() ([]string, error) {
 	var names []string
 
-	names = append(names, flag.Args()...)
+	names = append(names, flags.Args()...)
 	names, err := readNames(names)
 	if err != nil {
 		return nil, err
@@ -130,7 +133,7 @@ func getFileNames() ([]string, error) {
 }
 
 func main() {
-	flag.Parse()
+	flags.Parse(os.Args[1:])
 
 	if printVersion {
 		fmt.Printf("gotags version %s\n", Version)
@@ -145,13 +148,13 @@ func main() {
 	files, err := getFileNames()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "cannot get specified files\n\n")
-		flag.Usage()
+		flags.Usage()
 		os.Exit(1)
 	}
 
 	if len(files) == 0 && len(inputFile) == 0 {
 		fmt.Fprintf(os.Stderr, "no file specified\n\n")
-		flag.Usage()
+		flags.Usage()
 		os.Exit(1)
 	}
 
@@ -169,7 +172,7 @@ func main() {
 	fieldSet, err := parseFields(fields)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n\n", err)
-		flag.Usage()
+		flags.Usage()
 		os.Exit(1)
 	}
 
