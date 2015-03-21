@@ -30,6 +30,7 @@ var (
 	silent       bool
 	relative     bool
 	listLangs    bool
+	fields       string
 )
 
 // Initialize flags.
@@ -42,6 +43,7 @@ func init() {
 	flag.BoolVar(&silent, "silent", false, "do not produce any output on error.")
 	flag.BoolVar(&relative, "tag-relative", false, "file paths should be relative to the directory containing the tag file.")
 	flag.BoolVar(&listLangs, "list-languages", false, "list supported languages.")
+	flag.StringVar(&fields, "fields", "", "include selected extension fields (only +l).")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "gotags version %s\n\n", Version)
@@ -164,6 +166,13 @@ func main() {
 		}
 	}
 
+	fieldSet, err := parseFields(fields)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n\n", err)
+		flag.Usage()
+		os.Exit(1)
+	}
+
 	tags := []Tag{}
 	for _, file := range files {
 		ts, err := Parse(file, relative, basedir)
@@ -178,6 +187,9 @@ func main() {
 
 	output := createMetaTags()
 	for _, tag := range tags {
+		if fieldSet.Includes(Language) {
+			tag.Fields[Language] = "Go"
+		}
 		output = append(output, tag.String())
 	}
 
