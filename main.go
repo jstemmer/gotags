@@ -29,6 +29,7 @@ var (
 	sortOutput   bool
 	silent       bool
 	relative     bool
+	listLangs    bool
 )
 
 // Initialize flags.
@@ -40,6 +41,7 @@ func init() {
 	flag.BoolVar(&sortOutput, "sort", true, "sort tags.")
 	flag.BoolVar(&silent, "silent", false, "do not produce any output on error.")
 	flag.BoolVar(&relative, "tag-relative", false, "file paths should be relative to the directory containing the tag file.")
+	flag.BoolVar(&listLangs, "list-languages", false, "list supported languages.")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "gotags version %s\n\n", Version)
@@ -130,6 +132,11 @@ func main() {
 
 	if printVersion {
 		fmt.Printf("gotags version %s\n", Version)
+		return
+	}
+
+	if listLangs {
+		fmt.Println("Go")
 		return
 	}
 
