@@ -28,6 +28,7 @@ const (
 	ReceiverType  TagField = "ctype"
 	Line          TagField = "line"
 	InterfaceType TagField = "ntype"
+	Language      TagField = "language"
 )
 
 // TagType represents the type of a tag in a tag line.
