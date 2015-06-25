@@ -11,6 +11,10 @@ gotags is a [ctags][]-compatible tag generator for [Go][].
 
 	go get -u github.com/jstemmer/gotags
 
+Or using package manager `brew` on OS X
+
+	brew install gotags
+
 ## Usage
 
 	gotags [options] file(s)
