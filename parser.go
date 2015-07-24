@@ -12,22 +12,25 @@ import (
 
 // tagParser contains the data needed while parsing.
 type tagParser struct {
-	fset     *token.FileSet
-	tags     []Tag    // list of created tags
-	types    []string // all types we encounter, used to determine the constructors
-	relative bool     // should filenames be relative to basepath
-	basepath string   // output file directory
+	fset           *token.FileSet
+	tags           []Tag    // list of created tags
+	types          []string // all types we encounter, used to determine the constructors
+	relative       bool     // should filenames be relative to basepath
+	basepath       string   // output file directory
+	excludePrivate bool     // exclude private symbols
 }
 
-// Parse parses the source in filename and returns a list of tags. If relative
-// is true, the filenames in the list of tags are relative to basepath.
-func Parse(filename string, relative bool, basepath string) ([]Tag, error) {
+// Parse parses the source in filename and returns a list of tags.
+// If relative is true, the filenames in the list of tags are relative to basepath.
+// If excludePrivate is true, any symbols that are not exported will be excluded.
+func Parse(filename string, relative bool, basepath string, excludePrivate bool) ([]Tag, error) {
 	p := &tagParser{
-		fset:     token.NewFileSet(),
-		tags:     []Tag{},
-		types:    make([]string, 0),
-		relative: relative,
-		basepath: basepath,
+		fset:           token.NewFileSet(),
+		tags:           []Tag{},
+		types:          make([]string, 0),
+		relative:       relative,
+		basepath:       basepath,
+		excludePrivate: excludePrivate,
 	}
 
 	f, err := parser.ParseFile(p.fset, filename, nil, 0)
@@ -104,7 +107,7 @@ func (p *tagParser) parseFunction(f *ast.FuncDecl) {
 		tag.Type = Function
 	}
 
-	p.tags = append(p.tags, tag)
+	p.addTag(tag)
 }
 
 // parseTypeDeclaration creates a tag for type declaration ts and for each
@@ -127,7 +130,7 @@ func (p *tagParser) parseTypeDeclaration(ts *ast.TypeSpec) {
 		tag.Fields[TypeField] = getType(ts.Type, true)
 	}
 
-	p.tags = append(p.tags, tag)
+	p.addTag(tag)
 }
 
 // parseValueDeclaration creates a tag for each variable or constant declaration,
@@ -151,7 +154,8 @@ func (p *tagParser) parseValueDeclaration(v *ast.ValueSpec) {
 		case ast.Con:
 			tag.Type = Constant
 		}
-		p.tags = append(p.tags, tag)
+
+		p.addTag(tag)
 	}
 }
 
@@ -166,7 +170,7 @@ func (p *tagParser) parseStructFields(name string, s *ast.StructType) {
 				tag.Fields[Access] = getAccess(tag.Name)
 				tag.Fields[ReceiverType] = name
 				tag.Fields[TypeField] = getType(f.Type, true)
-				p.tags = append(p.tags, tag)
+				p.addTag(tag)
 			}
 		} else {
 			// embedded field
@@ -174,7 +178,7 @@ func (p *tagParser) parseStructFields(name string, s *ast.StructType) {
 			tag.Fields[Access] = getAccess(tag.Name)
 			tag.Fields[ReceiverType] = name
 			tag.Fields[TypeField] = getType(f.Type, true)
-			p.tags = append(p.tags, tag)
+			p.addTag(tag)
 		}
 	}
 }
@@ -200,7 +204,7 @@ func (p *tagParser) parseInterfaceMethods(name string, s *ast.InterfaceType) {
 
 		tag.Fields[InterfaceType] = name
 
-		p.tags = append(p.tags, tag)
+		p.addTag(tag)
 	}
 }
 
@@ -247,6 +251,14 @@ func (p *tagParser) belongsToReceiver(types *ast.FieldList) (name string, ok boo
 	}
 
 	return "", false
+}
+
+// addTag adds tag to the list or is skipped if exclude private and tag is private
+func (p *tagParser) addTag(tag Tag) {
+	if p.excludePrivate && tag.Fields[Access] != "public" {
+		return
+	}
+	p.tags = append(p.tags, tag)
 }
 
 // getTypes returns a comma separated list of types in fields. If includeNames is

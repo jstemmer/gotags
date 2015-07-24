@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -10,11 +11,12 @@ import (
 type F map[TagField]string
 
 var testCases = []struct {
-	filename   string
-	relative   bool
-	basepath   string
-	minversion string
-	tags       []Tag
+	filename       string
+	relative       bool
+	basepath       string
+	minversion     string
+	tags           []Tag
+	excludePrivate bool
 }{
 	{filename: "tests/const.go-src", tags: []Tag{
 		tag("Test", 1, "p", F{}),
@@ -95,6 +97,51 @@ var testCases = []struct {
 		tag("fmt", 3, "i", F{}),
 		tag("main", 5, "f", F{"access": "private", "signature": "()"}),
 	}},
+	// excludePrivate tests
+	{filename: "tests/func.go-src", excludePrivate: true, tags: []Tag{
+		tag("Test", 1, "p", F{}),
+		tag("Function1", 3, "f", F{"access": "public", "signature": "()", "type": "string"}),
+	}},
+	{filename: "tests/interface.go-src", excludePrivate: true, tags: []Tag{
+		tag("Test", 1, "p", F{}),
+		tag("InterfaceMethod", 4, "m", F{"access": "public", "signature": "(int)", "ntype": "Interface", "type": "string"}),
+		tag("OtherMethod", 5, "m", F{"access": "public", "signature": "()", "ntype": "Interface"}),
+		tag("io.Reader", 6, "e", F{"access": "public", "ntype": "Interface"}),
+		tag("Interface", 3, "n", F{"access": "public", "type": "interface"}),
+	}},
+	{filename: "tests/struct.go-src", excludePrivate: true, tags: []Tag{
+		tag("Test", 1, "p", F{}),
+		tag("Field1", 4, "w", F{"access": "public", "ctype": "Struct", "type": "int"}),
+		tag("Field2", 4, "w", F{"access": "public", "ctype": "Struct", "type": "int"}),
+		tag("Struct", 3, "t", F{"access": "public", "type": "struct"}),
+		tag("Struct", 20, "e", F{"access": "public", "ctype": "TestEmbed", "type": "Struct"}),
+		tag("*io.Writer", 21, "e", F{"access": "public", "ctype": "TestEmbed", "type": "*io.Writer"}),
+		tag("TestEmbed", 19, "t", F{"access": "public", "type": "struct"}),
+		tag("Struct2", 27, "t", F{"access": "public", "type": "struct"}),
+		tag("Connection", 36, "t", F{"access": "public", "type": "struct"}),
+		tag("NewStruct", 9, "f", F{"access": "public", "ctype": "Struct", "signature": "()", "type": "*Struct"}),
+		tag("F1", 13, "m", F{"access": "public", "ctype": "Struct", "signature": "()", "type": "[]bool, [2]*string"}),
+		tag("F2", 16, "m", F{"access": "public", "ctype": "Struct", "signature": "()", "type": "bool"}),
+		tag("NewTestEmbed", 24, "f", F{"access": "public", "ctype": "TestEmbed", "signature": "()", "type": "TestEmbed"}),
+		tag("NewStruct2", 30, "f", F{"access": "public", "ctype": "Struct2", "signature": "()", "type": "*Struct2, error"}),
+		tag("Dial", 33, "f", F{"access": "public", "ctype": "Connection", "signature": "()", "type": "*Connection, error"}),
+		tag("Dial2", 39, "f", F{"access": "public", "ctype": "Connection", "signature": "()", "type": "*Connection, *Struct2"}),
+		tag("Dial3", 42, "f", F{"access": "public", "signature": "()", "type": "*Connection, *Connection"}),
+	}},
+	{filename: "tests/type.go-src", excludePrivate: true, tags: []Tag{
+		tag("Test", 1, "p", F{}),
+	}},
+	{filename: "tests/var.go-src", excludePrivate: true, tags: []Tag{
+		tag("Test", 1, "p", F{}),
+		tag("A", 7, "v", F{"access": "public"}),
+		tag("B", 8, "v", F{"access": "public"}),
+		tag("C", 8, "v", F{"access": "public"}),
+		tag("D", 9, "v", F{"access": "public"}),
+	}},
+	{filename: "tests/range.go-src", excludePrivate: true, minversion: "go1.4", tags: []Tag{
+		tag("main", 1, "p", F{}),
+		tag("fmt", 3, "i", F{}),
+	}},
 }
 
 func TestParse(t *testing.T) {
@@ -110,14 +157,21 @@ func TestParse(t *testing.T) {
 			continue
 		}
 
-		tags, err := Parse(testCase.filename, testCase.relative, basepath)
+		tags, err := Parse(testCase.filename, testCase.relative, basepath, testCase.excludePrivate)
 		if err != nil {
 			t.Errorf("[%s] Parse error: %s", testCase.filename, err)
 			continue
 		}
 
 		if len(tags) != len(testCase.tags) {
-			t.Errorf("[%s] len(tags) == %d, want %d", testCase.filename, len(tags), len(testCase.tags))
+			msg := fmt.Sprintf("[%s] len(tags) == %d, want %d",
+				testCase.filename,
+				len(tags),
+				len(testCase.tags))
+			if testCase.excludePrivate {
+				msg += " (exclude private)"
+			}
+			t.Error(msg)
 			continue
 		}
 

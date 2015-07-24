@@ -21,6 +21,7 @@ Or using package manager `brew` on OS X
 
 	-L="": source file names are read from the specified file. If file is "-", input is read from standard in.
 	-R=false: recurse into directories in the file list.
+	-exclude-private=false: exclude private symbols.
 	-f="": write output to specified file. If file is "-", output is written to standard out.
 	-silent=false: do not produce any output on error.
 	-sort=true: sort tags.
