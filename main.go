@@ -133,7 +133,9 @@ func getFileNames() ([]string, error) {
 }
 
 func main() {
-	flags.Parse(os.Args[1:])
+	if err := flags.Parse(os.Args[1:]); err == flag.ErrHelp {
+		return
+	}
 
 	if printVersion {
 		fmt.Printf("gotags version %s\n", Version)
