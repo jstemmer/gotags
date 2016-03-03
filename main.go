@@ -149,7 +149,7 @@ func main() {
 
 	files, err := getFileNames()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "cannot get specified files\n\n")
+		fmt.Fprintf(os.Stderr, "cannot get specified files: %v\n\n", err)
 		flags.Usage()
 		os.Exit(1)
 	}
