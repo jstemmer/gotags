@@ -1,0 +1,19 @@
+package main
+
+type Struct struct {
+
+}
+
+
+func (s Struct) methodA()  {
+	println("s")
+	s.methodA()
+	if a := false; s.methodA() {
+
+	}
+	println("s.methodA()")
+	d := Struct{}
+	d.methodA(s.methodA())
+	panic(s)
+}
+
