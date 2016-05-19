@@ -66,6 +66,7 @@ var testCases = []struct {
 		tag("Dial", 33, 1, "f", F{"access": "public", "ctype": "Connection", "signature": "()", "type": "*Connection, error"}),
 		tag("Dial2", 39, 1, "f", F{"access": "public", "ctype": "Connection", "signature": "()", "type": "*Connection, *Struct2"}),
 		tag("Dial3", 42, 1, "f", F{"access": "public", "signature": "()", "type": "*Connection, *Connection"}),
+		tag("s", 13, 7, "x", F{}),
 	}},
 	{filename: "tests/type.go-src", tags: []Tag{
 		tag("Test", 1, 9, "p", F{}),
@@ -99,6 +100,7 @@ var testCases = []struct {
 		tag("main", 1, 9, "p", F{}),
 		tag("Struct", 3, 6, "t", F{"access": "public", "type": "struct"}),
 		tag("methodA", 8, 1, "m", F{"access": "private", "receiver": "s", "ctype": "Struct", "signature": "()"}),
+		tag("s", 8, 7, "x", F{}),
 		tag("s", 10, 2, "x", F{}),
 		tag("s", 11, 17, "x", F{}),
 		tag("s", 16, 12, "x", F{}),

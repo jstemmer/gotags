@@ -100,6 +100,13 @@ func (p *tagParser) parseMethod(f *ast.FuncDecl) {
 		return
 	}
 
+	receiver := f.Recv.List[0].Names[0]
+
+	p.tags = append(
+		p.tags,
+		p.createTag(receiver.Name, receiver.NamePos, Receiver),
+	)
+
 	visitor := &methodNodeVisitor{
 		receiver: f.Recv.List[0].Names[0].Obj,
 		parser:   p,
