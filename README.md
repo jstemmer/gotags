@@ -44,7 +44,8 @@ Put the following configuration in your vimrc:
 			\ 'e:embedded',
 			\ 'm:methods',
 			\ 'r:constructor',
-			\ 'f:functions'
+			\ 'f:functions',
+			\ 'x:receivers'
 		\ ],
 		\ 'sro' : '.',
 		\ 'kind2scope' : {

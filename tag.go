@@ -25,8 +25,10 @@ const (
 	Access        TagField = "access"
 	Signature     TagField = "signature"
 	TypeField     TagField = "type"
+	ReceiverName  TagField = "receiver"
 	ReceiverType  TagField = "ctype"
 	Line          TagField = "line"
+	Column        TagField = "column"
 	InterfaceType TagField = "ntype"
 	Language      TagField = "language"
 )
@@ -47,17 +49,23 @@ const (
 	Method      TagType = "m"
 	Constructor TagType = "r"
 	Function    TagType = "f"
+	Receiver    TagType = "x"
 )
 
 // NewTag creates a new Tag.
-func NewTag(name, file string, line int, tagType TagType) Tag {
+func NewTag(name, file string, line, column int, tagType TagType) Tag {
 	l := strconv.Itoa(line)
+	c := strconv.Itoa(column)
+
 	return Tag{
 		Name:    name,
 		File:    file,
 		Address: l,
 		Type:    tagType,
-		Fields:  map[TagField]string{Line: l},
+		Fields: map[TagField]string{
+			Line:   l,
+			Column: c,
+		},
 	}
 }
 
@@ -84,7 +92,8 @@ func (t Tag) String() string {
 		i++
 	}
 
-	sort.Sort(sort.StringSlice(fields))
+	sort.Strings(fields)
+
 	b.WriteString(strings.Join(fields, "\t"))
 
 	return b.String()

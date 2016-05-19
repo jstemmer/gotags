@@ -77,16 +77,47 @@ func (p *tagParser) parseDeclarations(f *ast.File) {
 		}
 	}
 
+	methods := []*ast.FuncDecl{}
+
 	// now parse all the functions
 	for _, d := range f.Decls {
 		if decl, ok := d.(*ast.FuncDecl); ok {
-			p.parseFunction(decl)
+			if p.parseFunction(decl) {
+				methods = append(methods, decl)
+			}
 		}
+	}
+
+	// now parse all the methods
+	for _, m := range methods {
+		p.parseMethod(m)
 	}
 }
 
+// parseMethod creates a set of tags for given method declaration.
+func (p *tagParser) parseMethod(f *ast.FuncDecl) {
+	if len(f.Recv.List[0].Names) == 0 {
+		return
+	}
+
+	receiver := f.Recv.List[0].Names[0]
+
+	p.tags = append(
+		p.tags,
+		p.createTag(receiver.Name, receiver.NamePos, Receiver),
+	)
+
+	visitor := &methodNodeVisitor{
+		receiver: f.Recv.List[0].Names[0].Obj,
+		parser:   p,
+	}
+
+	ast.Walk(visitor, f.Body)
+}
+
 // parseFunction creates a tag for function declaration f.
-func (p *tagParser) parseFunction(f *ast.FuncDecl) {
+// if parsed function is method, returns true, otherwise returns false
+func (p *tagParser) parseFunction(f *ast.FuncDecl) bool {
 	tag := p.createTag(f.Name.Name, f.Pos(), Function)
 
 	tag.Fields[Access] = getAccess(tag.Name)
@@ -96,6 +127,9 @@ func (p *tagParser) parseFunction(f *ast.FuncDecl) {
 	if f.Recv != nil && len(f.Recv.List) > 0 {
 		// this function has a receiver, set the type to Method
 		tag.Fields[ReceiverType] = getType(f.Recv.List[0].Type, false)
+		if len(f.Recv.List[0].Names) > 0 {
+			tag.Fields[ReceiverName] = f.Recv.List[0].Names[0].Name
+		}
 		tag.Type = Method
 	} else if name, ok := p.belongsToReceiver(f.Type.Results); ok {
 		// this function does not have a receiver, but it belongs to one based
@@ -105,6 +139,12 @@ func (p *tagParser) parseFunction(f *ast.FuncDecl) {
 	}
 
 	p.tags = append(p.tags, tag)
+
+	if tag.Type == Method {
+		return true
+	}
+
+	return false
 }
 
 // parseTypeDeclaration creates a tag for type declaration ts and for each
@@ -216,7 +256,10 @@ func (p *tagParser) createTag(name string, pos token.Pos, tagType TagType) Tag {
 			f = rel
 		}
 	}
-	return NewTag(name, f, p.fset.Position(pos).Line, tagType)
+
+	position := p.fset.Position(pos)
+
+	return NewTag(name, f, position.Line, position.Column, tagType)
 }
 
 // belongsToReceiver checks if a function with these return types belongs to
