@@ -88,7 +88,7 @@ var testCases = []struct {
 		tag("D", 9, "v", F{"access": "public"}),
 	}},
 	{filename: "tests/simple.go-src", relative: true, basepath: "dir", tags: []Tag{
-		Tag{Name: "main", File: "../tests/simple.go-src", Address: "1", Type: "p", Fields: F{"line": "1"}},
+		{Name: "main", File: "../tests/simple.go-src", Address: "1", Type: "p", Fields: F{"line": "1"}},
 	}},
 	{filename: "tests/range.go-src", minversion: "go1.4", tags: []Tag{
 		tag("main", 1, "p", F{}),
