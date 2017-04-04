@@ -21,16 +21,28 @@ const (
 	AuthorEmail = "stemmertech@gmail.com"
 )
 
+type patternList []string
+
+func (p *patternList) String() string {
+	return fmt.Sprint(*p)
+}
+
+func (p *patternList) Set(value string) error {
+	*p = append(*p, value)
+	return nil
+}
+
 var (
-	printVersion bool
-	inputFile    string
-	outputFile   string
-	recurse      bool
-	sortOutput   bool
-	silent       bool
-	relative     bool
-	listLangs    bool
-	fields       string
+	printVersion    bool
+	inputFile       string
+	outputFile      string
+	recurse         bool
+	sortOutput      bool
+	silent          bool
+	relative        bool
+	listLangs       bool
+	fields          string
+	excludePatterns patternList
 )
 
 // ignore unknown flags
@@ -47,6 +59,7 @@ func init() {
 	flags.BoolVar(&relative, "tag-relative", false, "file paths should be relative to the directory containing the tag file.")
 	flags.BoolVar(&listLangs, "list-languages", false, "list supported languages.")
 	flags.StringVar(&fields, "fields", "", "include selected extension fields (only +l).")
+	flags.Var(&excludePatterns, "exclude", "exclude files and directories matching 'pattern'. May be called multiple times.")
 
 	flags.Usage = func() {
 		fmt.Fprintf(os.Stderr, "gotags version %s\n\n", Version)
@@ -67,6 +80,43 @@ func walkDir(names []string, dir string) ([]string, error) {
 	})
 
 	return names, e
+}
+
+// includeName checks if the name should be allowed or not based on the exclude patterns
+func includeName(name string, patterns []string) (bool, error) {
+	for _, p := range patterns {
+		// Compare pattern to full path and then to base filename
+		for _, v := range []string{name, filepath.Base(name)} {
+			m, err := filepath.Match(p, v)
+			if err != nil {
+				// Error - exclude
+				return false, err
+			}
+			if m {
+				// Matches filepath - exclude
+				return false, nil
+			}
+		}
+	}
+
+	// No filters matched - include the file
+	return true, nil
+}
+
+func filterNames(names []string, patterns []string) ([]string, error) {
+	var ret []string
+
+	for _, f := range names {
+		ok, err := includeName(f, patterns)
+		if err != nil {
+			return nil, err
+		}
+		if ok {
+			ret = append(ret, f)
+		}
+	}
+
+	return ret, nil
 }
 
 func recurseNames(names []string) ([]string, error) {
@@ -113,20 +163,30 @@ func readNames(names []string) ([]string, error) {
 	return names, nil
 }
 
-func getFileNames() ([]string, error) {
+func getFileNames(files []string, recurse bool, excludes patternList) ([]string, error) {
 	var names []string
 
-	names = append(names, flags.Args()...)
+	// Start with list of supplied file names
+	names = append(names, files...)
+
+	// Read filenames from input file if provided
 	names, err := readNames(names)
 	if err != nil {
 		return nil, err
 	}
 
+	// Recurse into directories in the file list
 	if recurse {
 		names, err = recurseNames(names)
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	// Apply excludes patterns
+	names, err = filterNames(names, excludes)
+	if err != nil {
+		return nil, err
 	}
 
 	return names, nil
@@ -147,7 +207,7 @@ func main() {
 		return
 	}
 
-	files, err := getFileNames()
+	files, err := getFileNames(flags.Args(), recurse, excludePatterns)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "cannot get specified files\n\n")
 		flags.Usage()
