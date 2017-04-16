@@ -110,7 +110,7 @@ func TestParse(t *testing.T) {
 			continue
 		}
 
-		tags, err := Parse(testCase.filename, testCase.relative, basepath)
+		tags, err := Parse(testCase.filename, testCase.relative, basepath, false)
 		if err != nil {
 			t.Errorf("[%s] Parse error: %s", testCase.filename, err)
 			continue
