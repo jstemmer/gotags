@@ -2,7 +2,8 @@
 
 gotags is a [ctags][]-compatible tag generator for [Go][].
 
-[![Build Status](https://travis-ci.org/jstemmer/gotags.svg?branch=master)](http://travis-ci.org/jstemmer/gotags)
+[![Build Status][travis-badge]][travis-link]
+[![Report Card][report-badge]][report-link]
 
 ## Installation
 
@@ -60,7 +61,7 @@ Put the following configuration in your vimrc:
 	\ }
 
 ### Vim+Tagbar Screenshot
-![vim Tagbar gotags](http://stemmertech.com/images/gotags-1.0.0-screenshot.png)
+![vim Tagbar gotags](https://stemmertech.com/images/gotags-1.0.0-screenshot.png)
 
 ## gotags with Emacs
 
@@ -69,6 +70,10 @@ Gotags doesn't have support for generating etags yet, but
 gotags directly in Emacs.
 
 [ctags]: http://ctags.sourceforge.net
-[go]: http://golang.org
-[tagbar]: http://majutsushi.github.com/tagbar/
+[go]: https://golang.org
+[tagbar]: https://majutsushi.github.com/tagbar/
 [screenshot]: https://github.com/jstemmer/gotags/gotags-1.0.0-screenshot.png
+[travis-badge]: https://travis-ci.org/jstemmer/gotags.svg?branch=master
+[travis-link]: https://travis-ci.org/jstemmer/gotags
+[report-badge]: https://goreportcard.com/badge/github.com/jstemmer/gotags
+[report-link]: https://goreportcard.com/report/github.com/jstemmer/gotags
