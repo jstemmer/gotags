@@ -22,16 +22,16 @@ const (
 )
 
 var (
-	printVersion  bool
-	inputFile     string
-	outputFile    string
-	recurse       bool
-	sortOutput    bool
-	silent        bool
-	relative      bool
-	listLangs     bool
-	fields        string
-	extra_symbols bool
+	printVersion bool
+	inputFile    string
+	outputFile   string
+	recurse      bool
+	sortOutput   bool
+	silent       bool
+	relative     bool
+	listLangs    bool
+	fields       string
+	extraSymbols bool
 )
 
 // ignore unknown flags
@@ -48,7 +48,7 @@ func init() {
 	flags.BoolVar(&relative, "tag-relative", false, "file paths should be relative to the directory containing the tag file.")
 	flags.BoolVar(&listLangs, "list-languages", false, "list supported languages.")
 	flags.StringVar(&fields, "fields", "", "include selected extension fields (only +l).")
-	flags.BoolVar(&extra_symbols, "extra", false, "Add receiver and module information in symbol name")
+	flags.BoolVar(&extraSymbols, "extra", false, "Add receiver and module information in symbol name")
 
 	flags.Usage = func() {
 		fmt.Fprintf(os.Stderr, "gotags version %s\n\n", Version)
@@ -182,7 +182,7 @@ func main() {
 
 	tags := []Tag{}
 	for _, file := range files {
-		ts, err := Parse(file, relative, basedir, extra_symbols)
+		ts, err := Parse(file, relative, basedir, extraSymbols)
 		if err != nil {
 			if !silent {
 				fmt.Fprintf(os.Stderr, "parse error: %s\n\n", err)
