@@ -1,22 +1,60 @@
 package main
 
 import (
+	"fmt"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strconv"
 	"testing"
 )
 
+// This type is used to implement the sort.Interface interface
+// in order to be able to sort an array of Tag
+type TagSlice []Tag
+
+// Return the len of the array
+func (t TagSlice) Len() int {
+	return len(t)
+}
+
+// Compare two elements of a tag array
+func (t TagSlice) Less(i, j int) bool {
+	return -1 == strings.Compare(t[i].String(), t[j].String())
+}
+
+// Swap two elements of the underlying array
+func (t TagSlice) Swap(i, j int) {
+	t[i], t[j] = t[j], t[i]
+}
+
+// Dump the names of the tags in a TagSlice
+func (t TagSlice) Dump() {
+	for _, val := range t {
+		fmt.Println(val.Name)
+	}
+}
+
 type F map[TagField]string
 
 var testCases = []struct {
-	filename   string
-	relative   bool
-	basepath   string
-	minversion string
-	tags       []Tag
+	filename         string
+	relative         bool
+	basepath         string
+	minversion       string
+	withExtraSymbols bool
+	tags             []Tag
 }{
 	{filename: "tests/const.go-src", tags: []Tag{
+		tag("Test", 1, "p", F{}),
+		tag("Constant", 3, "c", F{"access": "public", "type": "string"}),
+		tag("OtherConst", 4, "c", F{"access": "public"}),
+		tag("A", 7, "c", F{"access": "public"}),
+		tag("B", 8, "c", F{"access": "public"}),
+		tag("C", 8, "c", F{"access": "public"}),
+		tag("D", 9, "c", F{"access": "public"}),
+	}},
+	{filename: "tests/const.go-src", withExtraSymbols: true, tags: []Tag{
 		tag("Test", 1, "p", F{}),
 		tag("Constant", 3, "c", F{"access": "public", "type": "string"}),
 		tag("OtherConst", 4, "c", F{"access": "public"}),
@@ -33,13 +71,39 @@ var testCases = []struct {
 		tag("function4", 12, "f", F{"access": "private", "signature": "(p interface{})", "type": "interface{}"}),
 		tag("function5", 15, "f", F{"access": "private", "signature": "()", "type": "string, string, error"}),
 	}},
+	{filename: "tests/func.go-src", withExtraSymbols: true, tags: []Tag{
+		tag("Test", 1, "p", F{}),
+		tag("Test.Function1", 3, "f", F{"access": "public", "signature": "()", "type": "string"}),
+		tag("Test.function2", 6, "f", F{"access": "private", "signature": "(p1, p2 int, p3 *string)"}),
+		tag("Test.function3", 9, "f", F{"access": "private", "signature": "()", "type": "bool"}),
+		tag("Test.function4", 12, "f", F{"access": "private", "signature": "(p interface{})", "type": "interface{}"}),
+		tag("Test.function5", 15, "f", F{"access": "private", "signature": "()", "type": "string, string, error"}),
+		tag("Function1", 3, "f", F{"access": "public", "signature": "()", "type": "string"}),
+		tag("function2", 6, "f", F{"access": "private", "signature": "(p1, p2 int, p3 *string)"}),
+		tag("function3", 9, "f", F{"access": "private", "signature": "()", "type": "bool"}),
+		tag("function4", 12, "f", F{"access": "private", "signature": "(p interface{})", "type": "interface{}"}),
+		tag("function5", 15, "f", F{"access": "private", "signature": "()", "type": "string, string, error"}),
+	}},
 	{filename: "tests/import.go-src", tags: []Tag{
 		tag("Test", 1, "p", F{}),
 		tag("fmt", 3, "i", F{}),
 		tag("go/ast", 6, "i", F{}),
 		tag("go/parser", 7, "i", F{}),
 	}},
+	{filename: "tests/import.go-src", withExtraSymbols: true, tags: []Tag{
+		tag("Test", 1, "p", F{}),
+		tag("fmt", 3, "i", F{}),
+		tag("go/ast", 6, "i", F{}),
+		tag("go/parser", 7, "i", F{}),
+	}},
 	{filename: "tests/interface.go-src", tags: []Tag{
+		tag("Test", 1, "p", F{}),
+		tag("InterfaceMethod", 4, "m", F{"access": "public", "signature": "(int)", "ntype": "Interface", "type": "string"}),
+		tag("OtherMethod", 5, "m", F{"access": "public", "signature": "()", "ntype": "Interface"}),
+		tag("io.Reader", 6, "e", F{"access": "public", "ntype": "Interface"}),
+		tag("Interface", 3, "n", F{"access": "public", "type": "interface"}),
+	}},
+	{filename: "tests/interface.go-src", withExtraSymbols: true, tags: []Tag{
 		tag("Test", 1, "p", F{}),
 		tag("InterfaceMethod", 4, "m", F{"access": "public", "signature": "(int)", "ntype": "Interface", "type": "string"}),
 		tag("OtherMethod", 5, "m", F{"access": "public", "signature": "()", "ntype": "Interface"}),
@@ -67,7 +131,51 @@ var testCases = []struct {
 		tag("Dial2", 39, "f", F{"access": "public", "ctype": "Connection", "signature": "()", "type": "*Connection, *Struct2"}),
 		tag("Dial3", 42, "f", F{"access": "public", "signature": "()", "type": "*Connection, *Connection"}),
 	}},
+	{filename: "tests/struct.go-src", withExtraSymbols: true, tags: []Tag{
+		tag("Test", 1, "p", F{}),
+		tag("Field1", 4, "w", F{"access": "public", "ctype": "Struct", "type": "int"}),
+		tag("Field2", 4, "w", F{"access": "public", "ctype": "Struct", "type": "int"}),
+		tag("field3", 5, "w", F{"access": "private", "ctype": "Struct", "type": "string"}),
+		tag("field4", 6, "w", F{"access": "private", "ctype": "Struct", "type": "*bool"}),
+		tag("Struct", 3, "t", F{"access": "public", "type": "struct"}),
+		tag("Struct", 20, "e", F{"access": "public", "ctype": "TestEmbed", "type": "Struct"}),
+		tag("*io.Writer", 21, "e", F{"access": "public", "ctype": "TestEmbed", "type": "*io.Writer"}),
+		tag("TestEmbed", 19, "t", F{"access": "public", "type": "struct"}),
+		tag("Struct2", 27, "t", F{"access": "public", "type": "struct"}),
+		tag("Connection", 36, "t", F{"access": "public", "type": "struct"}),
+		tag("NewStruct", 9, "f", F{"access": "public", "ctype": "Struct", "signature": "()", "type": "*Struct"}),
+		tag("Test.NewStruct", 9, "f", F{"access": "public", "ctype": "Struct", "signature": "()", "type": "*Struct"}),
+		tag("F1", 13, "m", F{"access": "public", "ctype": "Struct", "signature": "()", "type": "[]bool, [2]*string"}),
+		tag("Struct.F1", 13, "m", F{"access": "public", "ctype": "Struct", "signature": "()", "type": "[]bool, [2]*string"}),
+		tag("Test.F1", 13, "m", F{"access": "public", "ctype": "Struct", "signature": "()", "type": "[]bool, [2]*string"}),
+		tag("Test.Struct.F1", 13, "m", F{"access": "public", "ctype": "Struct", "signature": "()", "type": "[]bool, [2]*string"}),
+		tag("F2", 16, "m", F{"access": "public", "ctype": "Struct", "signature": "()", "type": "bool"}),
+		tag("Struct.F2", 16, "m", F{"access": "public", "ctype": "Struct", "signature": "()", "type": "bool"}),
+		tag("Test.Struct.F2", 16, "m", F{"access": "public", "ctype": "Struct", "signature": "()", "type": "bool"}),
+		tag("Test.F2", 16, "m", F{"access": "public", "ctype": "Struct", "signature": "()", "type": "bool"}),
+		tag("NewTestEmbed", 24, "f", F{"access": "public", "ctype": "TestEmbed", "signature": "()", "type": "TestEmbed"}),
+		tag("Test.NewTestEmbed", 24, "f", F{"access": "public", "ctype": "TestEmbed", "signature": "()", "type": "TestEmbed"}),
+		tag("NewStruct2", 30, "f", F{"access": "public", "ctype": "Struct2", "signature": "()", "type": "*Struct2, error"}),
+		tag("Test.NewStruct2", 30, "f", F{"access": "public", "ctype": "Struct2", "signature": "()", "type": "*Struct2, error"}),
+		tag("Dial", 33, "f", F{"access": "public", "ctype": "Connection", "signature": "()", "type": "*Connection, error"}),
+		tag("Test.Dial", 33, "f", F{"access": "public", "ctype": "Connection", "signature": "()", "type": "*Connection, error"}),
+		tag("Dial2", 39, "f", F{"access": "public", "ctype": "Connection", "signature": "()", "type": "*Connection, *Struct2"}),
+		tag("Test.Dial2", 39, "f", F{"access": "public", "ctype": "Connection", "signature": "()", "type": "*Connection, *Struct2"}),
+		tag("Dial3", 42, "f", F{"access": "public", "signature": "()", "type": "*Connection, *Connection"}),
+		tag("Test.Dial3", 42, "f", F{"access": "public", "signature": "()", "type": "*Connection, *Connection"}),
+	}},
 	{filename: "tests/type.go-src", tags: []Tag{
+		tag("Test", 1, "p", F{}),
+		tag("testType", 3, "t", F{"access": "private", "type": "int"}),
+		tag("testArrayType", 4, "t", F{"access": "private", "type": "[4]int"}),
+		tag("testSliceType", 5, "t", F{"access": "private", "type": "[]int"}),
+		tag("testPointerType", 6, "t", F{"access": "private", "type": "*string"}),
+		tag("testFuncType1", 7, "t", F{"access": "private", "type": "func()"}),
+		tag("testFuncType2", 8, "t", F{"access": "private", "type": "func(int) string"}),
+		tag("testMapType", 9, "t", F{"access": "private", "type": "map[string]bool"}),
+		tag("testChanType", 10, "t", F{"access": "private", "type": "chan bool"}),
+	}},
+	{filename: "tests/type.go-src", withExtraSymbols: true, tags: []Tag{
 		tag("Test", 1, "p", F{}),
 		tag("testType", 3, "t", F{"access": "private", "type": "int"}),
 		tag("testArrayType", 4, "t", F{"access": "private", "type": "[4]int"}),
@@ -87,13 +195,31 @@ var testCases = []struct {
 		tag("C", 8, "v", F{"access": "public"}),
 		tag("D", 9, "v", F{"access": "public"}),
 	}},
+	{filename: "tests/var.go-src", withExtraSymbols: true, tags: []Tag{
+		tag("Test", 1, "p", F{}),
+		tag("variable1", 3, "v", F{"access": "private", "type": "int"}),
+		tag("variable2", 4, "v", F{"access": "private", "type": "string"}),
+		tag("A", 7, "v", F{"access": "public"}),
+		tag("B", 8, "v", F{"access": "public"}),
+		tag("C", 8, "v", F{"access": "public"}),
+		tag("D", 9, "v", F{"access": "public"}),
+	}},
 	{filename: "tests/simple.go-src", relative: true, basepath: "dir", tags: []Tag{
+		{Name: "main", File: "../tests/simple.go-src", Address: "1", Type: "p", Fields: F{"line": "1"}},
+	}},
+	{filename: "tests/simple.go-src", withExtraSymbols: true, relative: true, basepath: "dir", tags: []Tag{
 		{Name: "main", File: "../tests/simple.go-src", Address: "1", Type: "p", Fields: F{"line": "1"}},
 	}},
 	{filename: "tests/range.go-src", minversion: "go1.4", tags: []Tag{
 		tag("main", 1, "p", F{}),
 		tag("fmt", 3, "i", F{}),
 		tag("main", 5, "f", F{"access": "private", "signature": "()"}),
+	}},
+	{filename: "tests/range.go-src", withExtraSymbols: true, minversion: "go1.4", tags: []Tag{
+		tag("main", 1, "p", F{}),
+		tag("fmt", 3, "i", F{}),
+		tag("main", 5, "f", F{"access": "private", "signature": "()"}),
+		tag("main.main", 5, "f", F{"access": "private", "signature": "()"}),
 	}},
 }
 
@@ -110,11 +236,14 @@ func TestParse(t *testing.T) {
 			continue
 		}
 
-		tags, err := Parse(testCase.filename, testCase.relative, basepath, false)
+		tags, err := Parse(testCase.filename, testCase.relative, basepath, testCase.withExtraSymbols)
 		if err != nil {
 			t.Errorf("[%s] Parse error: %s", testCase.filename, err)
 			continue
 		}
+
+		sort.Sort(TagSlice(tags))
+		sort.Sort(TagSlice(testCase.tags))
 
 		if len(tags) != len(testCase.tags) {
 			t.Errorf("[%s] len(tags) == %d, want %d", testCase.filename, len(tags), len(testCase.tags))
