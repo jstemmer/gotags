@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"sort"
 	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -236,7 +237,12 @@ func TestParse(t *testing.T) {
 			continue
 		}
 
-		tags, err := Parse(testCase.filename, testCase.relative, basepath, testCase.withExtraSymbols)
+		var extra FieldSet
+		if testCase.withExtraSymbols {
+			extra = FieldSet{Receiver: true, Module: true}
+		}
+
+		tags, err := Parse(testCase.filename, testCase.relative, basepath, extra)
 		if err != nil {
 			t.Errorf("[%s] Parse error: %s", testCase.filename, err)
 			continue

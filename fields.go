@@ -36,3 +36,14 @@ func parseFields(fields string) (FieldSet, error) {
 	}
 	return FieldSet{}, ErrInvalidFields{fields}
 }
+
+func parseExtraSymbols(symbols string) (FieldSet, error) {
+	symbolsPattern := regexp.MustCompile(`^\+q$`)
+	if symbols == "" {
+		return FieldSet{}, nil
+	}
+	if symbolsPattern.MatchString(symbols) {
+		return FieldSet{Receiver: true, Module: true}, nil
+	}
+	return FieldSet{}, ErrInvalidFields{fields}
+}

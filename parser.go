@@ -17,19 +17,19 @@ type tagParser struct {
 	types        []string // all types we encounter, used to determine the constructors
 	relative     bool     // should filenames be relative to basepath
 	basepath     string   // output file directory
-	extraSymbols bool     // add the receiver and the module to function and method name
+	extraSymbols FieldSet // add the receiver and the module to function and method name
 }
 
 // Parse parses the source in filename and returns a list of tags. If relative
 // is true, the filenames in the list of tags are relative to basepath.
-func Parse(filename string, relative bool, basepath string, extraSymbols bool) ([]Tag, error) {
+func Parse(filename string, relative bool, basepath string, extra FieldSet) ([]Tag, error) {
 	p := &tagParser{
 		fset:         token.NewFileSet(),
 		tags:         []Tag{},
 		types:        make([]string, 0),
 		relative:     relative,
 		basepath:     basepath,
-		extraSymbols: extraSymbols,
+		extraSymbols: extra,
 	}
 
 	f, err := parser.ParseFile(p.fset, filename, nil, 0)
@@ -112,15 +112,21 @@ func (p *tagParser) parseFunction(f *ast.FuncDecl, pkgName string) {
 
 	p.tags = append(p.tags, tag)
 
-	if p.extraSymbols {
+	if p.extraSymbols[Module] || p.extraSymbols[Receiver] {
 		all_names := make([]string, 0, 10)
-		all_names = append(all_names, fmt.Sprintf("%s.%s", pkgName, f.Name.Name))
+		if p.extraSymbols[Module] {
+			all_names = append(all_names, fmt.Sprintf("%s.%s", pkgName, f.Name.Name))
+		}
 		if Method == tag.Type {
-			all_names = append(all_names,
-				fmt.Sprintf("%s.%s", tag.Fields[ReceiverType], f.Name.Name))
-			all_names = append(all_names,
-				fmt.Sprintf("%s.%s.%s",
-					pkgName, tag.Fields[ReceiverType], f.Name.Name))
+			if p.extraSymbols[Receiver] {
+				all_names = append(all_names,
+					fmt.Sprintf("%s.%s", tag.Fields[ReceiverType], f.Name.Name))
+				if p.extraSymbols[Module] {
+					all_names = append(all_names,
+						fmt.Sprintf("%s.%s.%s",
+							pkgName, tag.Fields[ReceiverType], f.Name.Name))
+				}
+			}
 		}
 
 		for _, n := range all_names {
