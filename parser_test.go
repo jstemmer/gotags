@@ -6,7 +6,6 @@ import (
 	"runtime"
 	"sort"
 	"strconv"
-	"strings"
 	"testing"
 )
 
@@ -21,7 +20,7 @@ func (t TagSlice) Len() int {
 
 // Compare two elements of a tag array
 func (t TagSlice) Less(i, j int) bool {
-	return -1 == strings.Compare(t[i].String(), t[j].String())
+	return t[i].String() < t[j].String()
 }
 
 // Swap two elements of the underlying array
