@@ -31,8 +31,8 @@ func (t TagSlice) Swap(i, j int) {
 
 // Dump the names of the tags in a TagSlice
 func (t TagSlice) Dump() {
-	for _, val := range t {
-		fmt.Println(val.Name)
+	for idx, val := range t {
+		fmt.Println(idx, val.Name)
 	}
 }
 
@@ -110,6 +110,7 @@ var testCases = []struct {
 		tag("OtherMethod", 5, "m", F{"access": "public", "signature": "()", "ntype": "Interface"}),
 		tag("io.Reader", 6, "e", F{"access": "public", "ntype": "Interface"}),
 		tag("Interface", 3, "n", F{"access": "public", "type": "interface"}),
+		tag("Test.Interface", 3, "n", F{"access": "public", "type": "interface"}),
 	}},
 	{filename: "tests/struct.go-src", tags: []Tag{
 		tag("Test", 1, "p", F{}),
@@ -139,11 +140,15 @@ var testCases = []struct {
 		tag("field3", 5, "w", F{"access": "private", "ctype": "Struct", "type": "string"}),
 		tag("field4", 6, "w", F{"access": "private", "ctype": "Struct", "type": "*bool"}),
 		tag("Struct", 3, "t", F{"access": "public", "type": "struct"}),
+		tag("Test.Struct", 3, "t", F{"access": "public", "type": "struct"}),
 		tag("Struct", 20, "e", F{"access": "public", "ctype": "TestEmbed", "type": "Struct"}),
 		tag("*io.Writer", 21, "e", F{"access": "public", "ctype": "TestEmbed", "type": "*io.Writer"}),
 		tag("TestEmbed", 19, "t", F{"access": "public", "type": "struct"}),
+		tag("Test.TestEmbed", 19, "t", F{"access": "public", "type": "struct"}),
 		tag("Struct2", 27, "t", F{"access": "public", "type": "struct"}),
+		tag("Test.Struct2", 27, "t", F{"access": "public", "type": "struct"}),
 		tag("Connection", 36, "t", F{"access": "public", "type": "struct"}),
+		tag("Test.Connection", 36, "t", F{"access": "public", "type": "struct"}),
 		tag("NewStruct", 9, "f", F{"access": "public", "ctype": "Struct", "signature": "()", "type": "*Struct"}),
 		tag("Test.NewStruct", 9, "f", F{"access": "public", "ctype": "Struct", "signature": "()", "type": "*Struct"}),
 		tag("F1", 13, "m", F{"access": "public", "ctype": "Struct", "signature": "()", "type": "[]bool, [2]*string"}),
@@ -186,6 +191,14 @@ var testCases = []struct {
 		tag("testFuncType2", 8, "t", F{"access": "private", "type": "func(int) string"}),
 		tag("testMapType", 9, "t", F{"access": "private", "type": "map[string]bool"}),
 		tag("testChanType", 10, "t", F{"access": "private", "type": "chan bool"}),
+		tag("Test.testType", 3, "t", F{"access": "private", "type": "int"}),
+		tag("Test.testArrayType", 4, "t", F{"access": "private", "type": "[4]int"}),
+		tag("Test.testSliceType", 5, "t", F{"access": "private", "type": "[]int"}),
+		tag("Test.testPointerType", 6, "t", F{"access": "private", "type": "*string"}),
+		tag("Test.testFuncType1", 7, "t", F{"access": "private", "type": "func()"}),
+		tag("Test.testFuncType2", 8, "t", F{"access": "private", "type": "func(int) string"}),
+		tag("Test.testMapType", 9, "t", F{"access": "private", "type": "map[string]bool"}),
+		tag("Test.testChanType", 10, "t", F{"access": "private", "type": "chan bool"}),
 	}},
 	{filename: "tests/var.go-src", tags: []Tag{
 		tag("Test", 1, "p", F{}),

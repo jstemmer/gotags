@@ -75,7 +75,7 @@ func (p *tagParser) parseDeclarations(f *ast.File, pkgName string) {
 			for _, s := range decl.Specs {
 				switch ts := s.(type) {
 				case *ast.TypeSpec:
-					p.parseTypeDeclaration(ts)
+					p.parseTypeDeclaration(ts, pkgName)
 				case *ast.ValueSpec:
 					p.parseValueDeclaration(ts)
 				}
@@ -139,7 +139,8 @@ func (p *tagParser) parseFunction(f *ast.FuncDecl, pkgName string) {
 
 // parseTypeDeclaration creates a tag for type declaration ts and for each
 // field in case of a struct, or each method in case of an interface.
-func (p *tagParser) parseTypeDeclaration(ts *ast.TypeSpec) {
+// The pkgName argument holds the name of the package the file currently parsed belongs to.
+func (p *tagParser) parseTypeDeclaration(ts *ast.TypeSpec, pkgName string) {
 	tag := p.createTag(ts.Name.Name, ts.Pos(), Type)
 
 	tag.Fields[Access] = getAccess(tag.Name)
@@ -158,6 +159,12 @@ func (p *tagParser) parseTypeDeclaration(ts *ast.TypeSpec) {
 	}
 
 	p.tags = append(p.tags, tag)
+
+	if p.extraSymbols[Module] {
+		extraTag := tag
+		extraTag.Name = fmt.Sprintf("%s.%s", pkgName, tag.Name)
+		p.tags = append(p.tags, extraTag)
+	}
 }
 
 // parseValueDeclaration creates a tag for each variable or constant declaration,
