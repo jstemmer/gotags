@@ -77,7 +77,7 @@ func (p *tagParser) parseDeclarations(f *ast.File, pkgName string) {
 				case *ast.TypeSpec:
 					p.parseTypeDeclaration(ts, pkgName)
 				case *ast.ValueSpec:
-					p.parseValueDeclaration(ts)
+					p.parseValueDeclaration(ts, pkgName)
 				}
 			}
 		}
@@ -169,7 +169,7 @@ func (p *tagParser) parseTypeDeclaration(ts *ast.TypeSpec, pkgName string) {
 
 // parseValueDeclaration creates a tag for each variable or constant declaration,
 // unless the declaration uses a blank identifier.
-func (p *tagParser) parseValueDeclaration(v *ast.ValueSpec) {
+func (p *tagParser) parseValueDeclaration(v *ast.ValueSpec, pkgName string) {
 	for _, d := range v.Names {
 		if d.Name == "_" {
 			continue
@@ -189,6 +189,11 @@ func (p *tagParser) parseValueDeclaration(v *ast.ValueSpec) {
 			tag.Type = Constant
 		}
 		p.tags = append(p.tags, tag)
+		if p.extraSymbols[Module] {
+			otherTag := tag
+			otherTag.Name = fmt.Sprintf("%s.%s", pkgName, tag.Name)
+			p.tags = append(p.tags, otherTag)
+		}
 	}
 }
 
