@@ -43,7 +43,7 @@ func parseExtraSymbols(symbols string) (FieldSet, error) {
 		return FieldSet{}, nil
 	}
 	if symbolsPattern.MatchString(symbols) {
-		return FieldSet{Receiver: true, Module: true}, nil
+		return FieldSet{ExtraTags: true}, nil
 	}
 	return FieldSet{}, ErrInvalidFields{fields}
 }

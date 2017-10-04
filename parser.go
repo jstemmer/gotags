@@ -17,7 +17,7 @@ type tagParser struct {
 	types        []string // all types we encounter, used to determine the constructors
 	relative     bool     // should filenames be relative to basepath
 	basepath     string   // output file directory
-	extraSymbols FieldSet // add the receiver and the module to function and method name
+	extraSymbols FieldSet // add the receiver and the package to function and method name
 }
 
 // Parse parses the source in filename and returns a list of tags. If relative
@@ -112,27 +112,21 @@ func (p *tagParser) parseFunction(f *ast.FuncDecl, pkgName string) {
 
 	p.tags = append(p.tags, tag)
 
-	if p.extraSymbols[Module] || p.extraSymbols[Receiver] {
-		all_names := make([]string, 0, 10)
-		if p.extraSymbols[Module] {
-			all_names = append(all_names, fmt.Sprintf("%s.%s", pkgName, f.Name.Name))
-		}
-		if Method == tag.Type {
-			if p.extraSymbols[Receiver] {
-				all_names = append(all_names,
-					fmt.Sprintf("%s.%s", tag.Fields[ReceiverType], f.Name.Name))
-				if p.extraSymbols[Module] {
-					all_names = append(all_names,
-						fmt.Sprintf("%s.%s.%s",
-							pkgName, tag.Fields[ReceiverType], f.Name.Name))
-				}
-			}
+	if p.extraSymbols.Includes(ExtraTags) {
+		allNames := make([]string, 0, 10)
+		allNames = append(allNames, fmt.Sprintf("%s.%s", pkgName, f.Name.Name))
+		if tag.Type == Method {
+			allNames = append(allNames,
+				fmt.Sprintf("%s.%s", tag.Fields[ReceiverType], f.Name.Name))
+			allNames = append(allNames,
+				fmt.Sprintf("%s.%s.%s",
+					pkgName, tag.Fields[ReceiverType], f.Name.Name))
 		}
 
-		for _, n := range all_names {
-			new_tag := tag
-			new_tag.Name = n
-			p.tags = append(p.tags, new_tag)
+		for _, n := range allNames {
+			newTag := tag
+			newTag.Name = n
+			p.tags = append(p.tags, newTag)
 		}
 	}
 }
@@ -160,7 +154,7 @@ func (p *tagParser) parseTypeDeclaration(ts *ast.TypeSpec, pkgName string) {
 
 	p.tags = append(p.tags, tag)
 
-	if p.extraSymbols[Module] {
+	if p.extraSymbols.Includes(ExtraTags) {
 		extraTag := tag
 		extraTag.Name = fmt.Sprintf("%s.%s", pkgName, tag.Name)
 		p.tags = append(p.tags, extraTag)
@@ -189,7 +183,7 @@ func (p *tagParser) parseValueDeclaration(v *ast.ValueSpec, pkgName string) {
 			tag.Type = Constant
 		}
 		p.tags = append(p.tags, tag)
-		if p.extraSymbols[Module] {
+		if p.extraSymbols.Includes(ExtraTags) {
 			otherTag := tag
 			otherTag.Name = fmt.Sprintf("%s.%s", pkgName, tag.Name)
 			p.tags = append(p.tags, otherTag)

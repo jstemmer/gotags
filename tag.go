@@ -29,8 +29,7 @@ const (
 	Line          TagField = "line"
 	InterfaceType TagField = "ntype"
 	Language      TagField = "language"
-	Receiver      TagField = "receiver"
-	Module        TagField = "module"
+	ExtraTags     TagField = "extraTag"
 )
 
 // TagType represents the type of a tag in a tag line.

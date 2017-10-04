@@ -48,7 +48,7 @@ func init() {
 	flags.BoolVar(&relative, "tag-relative", false, "file paths should be relative to the directory containing the tag file.")
 	flags.BoolVar(&listLangs, "list-languages", false, "list supported languages.")
 	flags.StringVar(&fields, "fields", "", "include selected extension fields (only +l).")
-	flags.StringVar(&extraSymbols, "extra", "", "Add receiver and module  information (+q) in symbol name")
+	flags.StringVar(&extraSymbols, "extra", "", "include additional tags with package and receiver name prefixes (+q)")
 
 	flags.Usage = func() {
 		fmt.Fprintf(os.Stderr, "gotags version %s\n\n", Version)

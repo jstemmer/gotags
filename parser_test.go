@@ -263,7 +263,7 @@ func TestParse(t *testing.T) {
 
 		var extra FieldSet
 		if testCase.withExtraSymbols {
-			extra = FieldSet{Receiver: true, Module: true}
+			extra = FieldSet{ExtraTags: true}
 		}
 
 		tags, err := Parse(testCase.filename, testCase.relative, basepath, extra)
