@@ -12,22 +12,24 @@ import (
 
 // tagParser contains the data needed while parsing.
 type tagParser struct {
-	fset     *token.FileSet
-	tags     []Tag    // list of created tags
-	types    []string // all types we encounter, used to determine the constructors
-	relative bool     // should filenames be relative to basepath
-	basepath string   // output file directory
+	fset         *token.FileSet
+	tags         []Tag    // list of created tags
+	types        []string // all types we encounter, used to determine the constructors
+	relative     bool     // should filenames be relative to basepath
+	basepath     string   // output file directory
+	extraSymbols FieldSet // add the receiver and the package to function and method name
 }
 
 // Parse parses the source in filename and returns a list of tags. If relative
 // is true, the filenames in the list of tags are relative to basepath.
-func Parse(filename string, relative bool, basepath string) ([]Tag, error) {
+func Parse(filename string, relative bool, basepath string, extra FieldSet) ([]Tag, error) {
 	p := &tagParser{
-		fset:     token.NewFileSet(),
-		tags:     []Tag{},
-		types:    make([]string, 0),
-		relative: relative,
-		basepath: basepath,
+		fset:         token.NewFileSet(),
+		tags:         []Tag{},
+		types:        make([]string, 0),
+		relative:     relative,
+		basepath:     basepath,
+		extraSymbols: extra,
 	}
 
 	f, err := parser.ParseFile(p.fset, filename, nil, 0)
@@ -36,20 +38,21 @@ func Parse(filename string, relative bool, basepath string) ([]Tag, error) {
 	}
 
 	// package
-	p.parsePackage(f)
+	pkgName := p.parsePackage(f)
 
 	// imports
 	p.parseImports(f)
 
 	// declarations
-	p.parseDeclarations(f)
+	p.parseDeclarations(f, pkgName)
 
 	return p.tags, nil
 }
 
 // parsePackage creates a package tag.
-func (p *tagParser) parsePackage(f *ast.File) {
+func (p *tagParser) parsePackage(f *ast.File) string {
 	p.tags = append(p.tags, p.createTag(f.Name.Name, f.Name.Pos(), Package))
+	return f.Name.Name
 }
 
 // parseImports creates an import tag for each import.
@@ -61,7 +64,10 @@ func (p *tagParser) parseImports(f *ast.File) {
 }
 
 // parseDeclarations creates a tag for each function, type or value declaration.
-func (p *tagParser) parseDeclarations(f *ast.File) {
+// On function symbol we will add 2 entries in the tag file, one with the function name only
+// and one with the belonging module name and the function name.
+// For method symbol we will add 3 entries: method, receiver.method, module.receiver.method
+func (p *tagParser) parseDeclarations(f *ast.File, pkgName string) {
 	// first parse the type and value declarations, so that we have a list of all
 	// known types before parsing the functions.
 	for _, d := range f.Decls {
@@ -69,9 +75,9 @@ func (p *tagParser) parseDeclarations(f *ast.File) {
 			for _, s := range decl.Specs {
 				switch ts := s.(type) {
 				case *ast.TypeSpec:
-					p.parseTypeDeclaration(ts)
+					p.parseTypeDeclaration(ts, pkgName)
 				case *ast.ValueSpec:
-					p.parseValueDeclaration(ts)
+					p.parseValueDeclaration(ts, pkgName)
 				}
 			}
 		}
@@ -80,13 +86,13 @@ func (p *tagParser) parseDeclarations(f *ast.File) {
 	// now parse all the functions
 	for _, d := range f.Decls {
 		if decl, ok := d.(*ast.FuncDecl); ok {
-			p.parseFunction(decl)
+			p.parseFunction(decl, pkgName)
 		}
 	}
 }
 
 // parseFunction creates a tag for function declaration f.
-func (p *tagParser) parseFunction(f *ast.FuncDecl) {
+func (p *tagParser) parseFunction(f *ast.FuncDecl, pkgName string) {
 	tag := p.createTag(f.Name.Name, f.Pos(), Function)
 
 	tag.Fields[Access] = getAccess(tag.Name)
@@ -105,11 +111,30 @@ func (p *tagParser) parseFunction(f *ast.FuncDecl) {
 	}
 
 	p.tags = append(p.tags, tag)
+
+	if p.extraSymbols.Includes(ExtraTags) {
+		allNames := make([]string, 0, 10)
+		allNames = append(allNames, fmt.Sprintf("%s.%s", pkgName, f.Name.Name))
+		if tag.Type == Method {
+			allNames = append(allNames,
+				fmt.Sprintf("%s.%s", tag.Fields[ReceiverType], f.Name.Name))
+			allNames = append(allNames,
+				fmt.Sprintf("%s.%s.%s",
+					pkgName, tag.Fields[ReceiverType], f.Name.Name))
+		}
+
+		for _, n := range allNames {
+			newTag := tag
+			newTag.Name = n
+			p.tags = append(p.tags, newTag)
+		}
+	}
 }
 
 // parseTypeDeclaration creates a tag for type declaration ts and for each
 // field in case of a struct, or each method in case of an interface.
-func (p *tagParser) parseTypeDeclaration(ts *ast.TypeSpec) {
+// The pkgName argument holds the name of the package the file currently parsed belongs to.
+func (p *tagParser) parseTypeDeclaration(ts *ast.TypeSpec, pkgName string) {
 	tag := p.createTag(ts.Name.Name, ts.Pos(), Type)
 
 	tag.Fields[Access] = getAccess(tag.Name)
@@ -128,11 +153,17 @@ func (p *tagParser) parseTypeDeclaration(ts *ast.TypeSpec) {
 	}
 
 	p.tags = append(p.tags, tag)
+
+	if p.extraSymbols.Includes(ExtraTags) {
+		extraTag := tag
+		extraTag.Name = fmt.Sprintf("%s.%s", pkgName, tag.Name)
+		p.tags = append(p.tags, extraTag)
+	}
 }
 
 // parseValueDeclaration creates a tag for each variable or constant declaration,
 // unless the declaration uses a blank identifier.
-func (p *tagParser) parseValueDeclaration(v *ast.ValueSpec) {
+func (p *tagParser) parseValueDeclaration(v *ast.ValueSpec, pkgName string) {
 	for _, d := range v.Names {
 		if d.Name == "_" {
 			continue
@@ -152,6 +183,11 @@ func (p *tagParser) parseValueDeclaration(v *ast.ValueSpec) {
 			tag.Type = Constant
 		}
 		p.tags = append(p.tags, tag)
+		if p.extraSymbols.Includes(ExtraTags) {
+			otherTag := tag
+			otherTag.Name = fmt.Sprintf("%s.%s", pkgName, tag.Name)
+			p.tags = append(p.tags, otherTag)
+		}
 	}
 }
 
