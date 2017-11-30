@@ -14,3 +14,9 @@ func function4(p interface{}) interface{} {
 
 func function5() (a, b string, c error) {
 }
+
+func function6(v ...interface{}) {
+}
+
+func function7(s ...string) {
+}
