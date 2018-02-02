@@ -3,11 +3,14 @@ package main
 import (
 	"fmt"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"sort"
 	"strconv"
 	"testing"
 )
+
+var goVersionRegexp = regexp.MustCompile(`^go1(?:\.(\d+))?`)
 
 // This type is used to implement the sort.Interface interface
 // in order to be able to sort an array of Tag
@@ -41,7 +44,7 @@ var testCases = []struct {
 	filename         string
 	relative         bool
 	basepath         string
-	minversion       string
+	minversion       int
 	withExtraSymbols bool
 	tags             []Tag
 }{
@@ -235,12 +238,12 @@ var testCases = []struct {
 	{filename: "testdata/simple.go", withExtraSymbols: true, relative: true, basepath: "dir", tags: []Tag{
 		{Name: "main", File: "../testdata/simple.go", Address: "1", Type: "p", Fields: F{"line": "1"}},
 	}},
-	{filename: "testdata/range.go", minversion: "go1.4", tags: []Tag{
+	{filename: "testdata/range.go", minversion: 4, tags: []Tag{
 		tag("main", 1, "p", F{}),
 		tag("fmt", 3, "i", F{}),
 		tag("main", 5, "f", F{"access": "private", "signature": "()"}),
 	}},
-	{filename: "testdata/range.go", withExtraSymbols: true, minversion: "go1.4", tags: []Tag{
+	{filename: "testdata/range.go", withExtraSymbols: true, minversion: 4, tags: []Tag{
 		tag("main", 1, "p", F{}),
 		tag("fmt", 3, "i", F{}),
 		tag("main", 5, "f", F{"access": "private", "signature": "()"}),
@@ -250,8 +253,8 @@ var testCases = []struct {
 
 func TestParse(t *testing.T) {
 	for _, testCase := range testCases {
-		if testCase.minversion != "" && runtime.Version() < testCase.minversion {
-			t.Skipf("[%s] skipping test. Version is %s, but test requires %s", testCase.filename, runtime.Version(), testCase.minversion)
+		if testCase.minversion > 0 && extractVersionCode(runtime.Version()) < testCase.minversion {
+			t.Skipf("[%s] skipping test. Version is %s, but test requires at least go1.%d", testCase.filename, runtime.Version(), testCase.minversion)
 			continue
 		}
 
@@ -303,4 +306,13 @@ func tag(n string, l int, t TagType, fields F) (tag Tag) {
 	tag.Fields["line"] = tag.Address
 
 	return
+}
+
+func extractVersionCode(version string) int {
+	matches := goVersionRegexp.FindAllStringSubmatch(version, -1)
+	if len(matches) == 0 || len(matches[0]) < 2 {
+		return 0
+	}
+	n, _ := strconv.Atoi(matches[0][1])
+	return n
 }
