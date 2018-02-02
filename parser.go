@@ -360,6 +360,8 @@ func getType(node ast.Node, star bool) (paramType string) {
 		paramType = fmt.Sprintf("chan %s", getType(t.Value, true))
 	case *ast.InterfaceType:
 		paramType = "interface{}"
+	case *ast.Ellipsis:
+		paramType = fmt.Sprintf("...%s", getType(t.Elt, true))
 	}
 	return
 }
