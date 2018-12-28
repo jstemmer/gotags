@@ -1,11 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -32,9 +35,41 @@ func Parse(filename string, relative bool, basepath string, extra FieldSet) ([]T
 		extraSymbols: extra,
 	}
 
-	f, err := parser.ParseFile(p.fset, filename, nil, 0)
+	/*
+		_, _, _, _ = log.Fatalf, exec.Command, bytes.Buffer{}, strings.Trim	 // skip packages used in other variant
+		f, err := parser.ParseFile(p.fset, filename, nil, 0)
+		if err != nil {
+			// this hack is required because go expects windows style filename convention
+			// but it gets cygwin (linux) style filename from tagbar plugin
+			filename = "c:/cygwin64" + filename	// hard coded version works, but will not work for other cygwin path ... use cygpath
+			f, err = parser.ParseFile(p.fset, filename, nil, 0)
+			if err != nil {
+				return nil, err
+			}
+		}
+	*/
+	f, err := parser.ParseFile(p.fset, filename, nil, 0) // this will work under cygwin with local files as well ... let it
 	if err != nil {
-		return nil, err
+		// however when file is not local ...
+		// this hack is required because go expects windows style filename convention
+		// but it gets cygwin (linux) style filename from tagbar plugin
+		cmd := exec.Command("cygpath", "-m", filename) // mixed mode ok
+		var stdout, stderr bytes.Buffer
+		cmd.Stdout = &stdout
+		cmd.Stderr = &stderr
+		err = cmd.Run()
+		if err != nil {
+			log.Fatalf("cmd.Run() failed with %s\n", err)
+			os.Exit(1)
+		} else {
+			outStr, errStr := string(stdout.Bytes()), string(stderr.Bytes())
+			_ = errStr
+			filename = strings.Trim(outStr, "\n")
+			f, err = parser.ParseFile(p.fset, filename, nil, 0)
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	// package
