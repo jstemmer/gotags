@@ -62,7 +62,7 @@ func NewTag(name, file string, line int, tagType TagType) Tag {
 	}
 }
 
-// The tags file format string representation of this tag.
+// String: The tags file format string representation of this tag.
 func (t Tag) String() string {
 	var b bytes.Buffer
 

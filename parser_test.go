@@ -16,12 +16,12 @@ var goVersionRegexp = regexp.MustCompile(`^go1(?:\.(\d+))?`)
 // in order to be able to sort an array of Tag
 type TagSlice []Tag
 
-// Return the len of the array
+// Len returns the len of the array
 func (t TagSlice) Len() int {
 	return len(t)
 }
 
-// Compare two elements of a tag array
+// Less compares two elements of a tag array
 func (t TagSlice) Less(i, j int) bool {
 	return t[i].String() < t[j].String()
 }
